@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: dev                  #设置环境
+  application:
+    name: risk-config            #风控引擎分析服务
+
+server:
+  port: 9002                    #应用运行端口

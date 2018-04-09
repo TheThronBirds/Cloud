@@ -1,0 +1,23 @@
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:9000/eureka/,http://${eureka.instance.hostname}:9001/eureka/
+
+spring: 
+  cloud:  
+    config:
+      label: master
+      server:
+        git: #配置git仓库地址
+          uri: http://gitlab.yhfin.club:81/risk/risk-engine.git
+          search-paths: yh-risk-remote-config
+          username: caohui
+          password: 415ilyILY
+          basedir: D:/workplace/idea/yh-risk-eureka-parent
+
+
+            

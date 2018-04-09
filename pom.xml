@@ -18,7 +18,7 @@
         <!-- 微服务 消息服务器 -->
         <module>yh-risk-eureka-stream</module>
         <!-- 微服务 结果处理服务器 -->
-        <module>yh-risk-euraka-result</module>
+        <module>yh-risk-eureka-result</module>
         <!-- 微服务 通知服务器 -->
         <module>yh-risk-eureka-notice</module>
         <module>yh-risk-eureka-register</module>
