@@ -1,4 +1,15 @@
+eureka:
+    instance:
+      hostname: localhost
+    client:
+      register-with-eureka: true
+      fetch-registry: true
+      service-url:
+        defaultZone: http://${eureka.instance.hostname}:9000/eureka/,http://${eureka.instance.hostname}:9001/eureka/
+
 spring:
+  application:
+    name: risk-notice
   cloud:
     config:
       retry:
@@ -13,14 +24,6 @@ spring:
         service-id: RISK-CONFIG
         enabled: true
       
-  application:
-    name: risk-notice
 
-  eureka:
-    instance:
-      hostname: localhost
-    client:
-      register-with-eureka: true
-      fetch-registry: true
-      service-url:
-        defaultZone: http://${eureka.instance.hostname}:9000/eureka/,http://${eureka.instance.hostname}:9001/eureka/
+
+

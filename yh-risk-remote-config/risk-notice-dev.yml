@@ -1,0 +1,46 @@
+yhtech:
+  web:
+    swagger: true
+  data:
+    config: risk,redis
+    memory:
+      kettle:
+        job: H2memoryDataSynJob
+        properties: C:/Users/youlangta/.kettle/kettle.properties
+        reposity:
+         path: F:/kettle 
+      dataSourceName: memoryDataSource
+      jdbcname: memoryJdbcOperations
+      url: jdbc:h2:mem:memorydb
+      username: sa
+      password: null
+      driverClassName: org.h2.Driver
+      transactionManager: MemorytransactionManager
+    risk:
+      dataSourceName: riskDataSource
+      jdbcname: riskJdbcOperations
+      url: jdbc:oracle:thin:@localhost:1521:orcl
+      username: RISK_DEV
+      password: RISK_DEV
+      driverClassName: oracle.jdbc.OracleDriver
+      transactionManager: RisktransactionManager
+ 
+spring:
+  redis:
+    cluster:
+      nodes: 
+        - 192.168.100.100:7001
+        - 192.168.100.100:7002
+        - 192.168.100.100:7003
+        - 192.168.100.100:7004
+        - 192.168.100.100:7005
+        - 192.168.100.100:7006
+  h2:
+    console:
+      enabled: true
+      settings:
+        web-allow-others: true
+        
+ server:
+  port: 9004
+        
