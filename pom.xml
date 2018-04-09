@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.yhrin.risk</groupId>
+    <artifactId>yh-risk-eureka-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <!-- 微服务 配置中心 -->
+        <module>yh-risk-eureka-config</module>
+        <!-- 微服务 网关 -->
+        <module>yh-risk-eureka-gateway</module>
+        <!-- 微服务 分析服务器 -->
+        <module>yh-risk-eureka-analy</module>
+        <!-- 微服务 计算服务器 -->
+        <module>yh-risk-eureka-calculate</module>
+        <!-- 微服务 消息服务器 -->
+        <module>yh-risk-eureka-stream</module>
+        <!-- 微服务 结果处理服务器 -->
+        <module>yh-risk-euraka-result</module>
+        <!-- 微服务 通知服务器 -->
+        <module>yh-risk-eureka-notice</module>
+        <module>yh-risk-eureka-register</module>
+    </modules>
+    <packaging>pom</packaging>
+
+    <name>yh-risk-eureka-parent</name>
+    <description>风控项目微服务</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.9.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <spring-cloud.version>Edgware.SR1</spring-cloud.version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
