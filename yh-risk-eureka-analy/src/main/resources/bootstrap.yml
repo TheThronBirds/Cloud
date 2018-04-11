@@ -7,7 +7,7 @@ eureka:
 
 spring:
   application:
-    name: risk-notice
+    name: risk-analy
   cloud:
     config:
       retry:

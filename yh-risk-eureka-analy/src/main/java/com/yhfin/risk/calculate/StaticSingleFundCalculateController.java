@@ -1,0 +1,40 @@
+package com.yhfin.risk.calculate;
+
+
+import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;
+import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
+import com.yhfin.risk.common.responses.ServerResponse;
+import com.yhfin.risk.core.analy.optimize.IEntryAnalyService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * 单个基金计算请求
+ * @author youlangta
+ * @since 2018-04-11
+ */
+@RestController
+@RequestMapping("/yhfin/analy")
+public class StaticSingleFundCalculateController {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private IEntryAnalyService analyService;
+
+    @RequestMapping(value = "/staticSingleCalculate")
+    public ServerResponse<StaticSingleFundCalculateResult> staticSingleFundCalculate(StaticSingleFundCalculateRequest calculateRequest) {
+        StaticSingleFundCalculateResult calculateResult = new StaticSingleFundCalculateResult(calculateRequest.getRequestId(), calculateRequest.getSerialNumber(), calculateRequest.getFundId());
+        //TODO  对请求进行发起分析  判断条目版本号   判断内存版本号
+        CompletableFuture.runAsync(() -> analyService.stockInstructionCalculateRequestSingleFund(calculateRequest.getFundId(), calculateRequest.getRiskIds(), calculateRequest.getRequestId(), calculateRequest.getSerialNumber()));
+
+        return ServerResponse.createBySuccess(calculateRequest.getRequestId(), calculateRequest.getSerialNumber(), calculateResult);
+    }
+
+
+}

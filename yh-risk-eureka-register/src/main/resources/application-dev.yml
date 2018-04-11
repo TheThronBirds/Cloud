@@ -1,10 +1,13 @@
-
+server:
+  port: 9000              #应用运行端口
 
 eureka:
   instance:
     hostname: localhost
   client:
-    #register-with-eureka: false
-    #fetch-registry: false
+    register-with-eureka: false
+    fetch-registry: false
     service-url:
-      defaultZone: http://localhost:${server.registry.port}/eureka/
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
+

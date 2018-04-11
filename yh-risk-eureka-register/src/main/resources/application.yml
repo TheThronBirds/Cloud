@@ -4,8 +4,4 @@ spring:
   application:
     name: risk-registry   #风控引擎服务注册中心
 
-server:
-  registry:
-    port: 9001
-  port: 9000              #应用运行端口
 
