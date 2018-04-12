@@ -1,11 +1,11 @@
-package com.yhfin.risk.controller.calculate;
+package com.yhfin.risk.notice.controller.calculate;
 
 import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.common.pojos.notice.StaticCalculateResult;
 import com.yhfin.risk.common.requests.calculate.StaticCalculateRequest;
 import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
 import com.yhfin.risk.common.responses.ServerResponse;
-import com.yhfin.risk.service.ICalculateService;
+import com.yhfin.risk.notice.service.ICalculateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

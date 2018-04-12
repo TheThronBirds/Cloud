@@ -1,9 +1,9 @@
-package com.yhfin.risk.controller.message;
+package com.yhfin.risk.notice.controller.message;
 
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
 import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
-import com.yhfin.risk.service.IMessageService;
+import com.yhfin.risk.notice.service.IMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,4 +1,4 @@
-package com.yhfin.risk.service.impl;
+package com.yhfin.risk.notice.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -7,7 +7,7 @@ import com.yhfin.risk.common.requests.message.AbstractBaseMessageRequest;
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
 import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
-import com.yhfin.risk.service.IMessageService;
+import com.yhfin.risk.notice.service.IMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

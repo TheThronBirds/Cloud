@@ -1,4 +1,4 @@
-package com.yhfin.risk.channel;
+package com.yhfin.risk.notice.channel;
 
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.messaging.SubscribableChannel;

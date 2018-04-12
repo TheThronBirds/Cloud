@@ -1,4 +1,4 @@
-package com.yhfin.risk.service;
+package com.yhfin.risk.notice.service;
 
 
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;

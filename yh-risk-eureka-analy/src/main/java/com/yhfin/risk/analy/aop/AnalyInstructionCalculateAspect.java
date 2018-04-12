@@ -1,4 +1,4 @@
-package com.yhfin.risk.aop;
+package com.yhfin.risk.analy.aop;
 
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;

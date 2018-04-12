@@ -1,4 +1,4 @@
-package com.yhfin.risk.calculate;
+package com.yhfin.risk.analy.calculate;
 
 
 import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;

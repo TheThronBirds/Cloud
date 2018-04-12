@@ -1,4 +1,4 @@
-package com.yhfin.risk.aop;
+package com.yhfin.risk.notice.aop;
 
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.requests.message.AbstractBaseMessageRequest;
@@ -27,7 +27,7 @@ public class MessageSynchronizateAspect {
     @Autowired
     private IJedisClusterDao jedisClusterDao;
 
-    @Pointcut("execution(* com.yhfin.risk.service.IMessageService.*(..))")
+    @Pointcut("execution(* com.yhfin.risk.notice.service.IMessageService.*(..))")
     public void messageSynchronizate() {
 
     }

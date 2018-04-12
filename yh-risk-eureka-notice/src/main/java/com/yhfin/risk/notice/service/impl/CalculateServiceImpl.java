@@ -1,4 +1,4 @@
-package com.yhfin.risk.service.impl;
+package com.yhfin.risk.notice.service.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.yhfin.risk.common.consts.Const;
@@ -6,7 +6,7 @@ import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;
 import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
 import com.yhfin.risk.common.responses.ServerResponse;
 import com.yhfin.risk.common.utils.StringUtil;
-import com.yhfin.risk.service.ICalculateService;
+import com.yhfin.risk.notice.service.ICalculateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

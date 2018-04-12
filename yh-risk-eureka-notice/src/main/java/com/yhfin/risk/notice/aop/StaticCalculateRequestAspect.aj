@@ -1,4 +1,4 @@
-package com.yhfin.risk.aop;
+package com.yhfin.risk.notice.aop;
 
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.pojos.sql.SqlProperties;
@@ -34,7 +34,7 @@ public class StaticCalculateRequestAspect {
     @Autowired
     private SqlProperties sqlProperties;
 
-    @Around("execution(* com.yhfin.risk.controller.calculate.StaticCalculateController.staticCalculate(..))")
+    @Around("execution(* com.yhfin.risk.notice.controller.calculate.StaticCalculateController.staticCalculate(..))")
     public Object staticCalculateAspect(ProceedingJoinPoint joinPoint) {
         StaticCalculateRequest calculateRequest = (StaticCalculateRequest) joinPoint.getArgs()[0];
         if (calculateRequest == null) {
