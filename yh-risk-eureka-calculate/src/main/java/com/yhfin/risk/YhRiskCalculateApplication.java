@@ -1,6 +1,6 @@
-package com.yhrin.risk;
+package com.yhfin.risk;
 
-import com.yhrin.risk.calculate.chanel.InputChannels;
+import com.yhfin.risk.calculate.chanel.InputChannels;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;

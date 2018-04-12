@@ -1,10 +1,10 @@
-package com.yhrin.risk.calculate.message.impl;
+package com.yhfin.risk.calculate.message.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
 import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.core.synchronizate.memory.IMemorySynchronizateService;
-import com.yhrin.risk.calculate.message.IMessageService;
+import com.yhfin.risk.calculate.message.IMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ public class MessageServiceImpl implements IMessageService {
 
     @Autowired
     private IMemorySynchronizateService memorySynchronizateService;
-
 
     /**
      * 同步内存消息

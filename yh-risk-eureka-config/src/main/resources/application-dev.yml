@@ -19,7 +19,7 @@ spring:
       label: eureka
       server:
         git: #配置git仓库地址
-          #basedir: D:/workplace/idea/yh-risk-eureka-parent
+          basedir: D:/workplace/idea/yh-risk-eureka-parent
           uri: http://gitlab.yhfin.club:81/risk/risk-engine.git
           search-paths: yh-risk-remote-config
           username: caohui

@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yhfin.risk</groupId>
-            <artifactId>yh-risk-core-calculate</artifactId>
+            <artifactId>yh-risk-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

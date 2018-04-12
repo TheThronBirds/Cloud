@@ -1,4 +1,4 @@
-package com.yhrin.risk.calculate.message;
+package com.yhfin.risk.calculate.message;
 
 
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;

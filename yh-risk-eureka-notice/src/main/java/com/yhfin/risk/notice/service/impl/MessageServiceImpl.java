@@ -7,6 +7,7 @@ import com.yhfin.risk.common.requests.message.AbstractBaseMessageRequest;
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
 import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
+import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.notice.service.IMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class MessageServiceImpl implements IMessageService {
      * @return
      */
     @Override
-    @HystrixCommand(fallbackMethod = "messageSynchronizateFallBack")
+    @HystrixCommand(fallbackMethod = "entryMessageSynchronizateFallBack")
     public ServerResponse<EntryMessageSynchronizate> entryMessageSynchronizate(EntryMessageSynchronizate messageSynchronizate) {
         if (logger.isInfoEnabled()) {
             logger.info("接收到同步条目消息请求,{}", JSON.toJSONString(messageSynchronizate));
@@ -44,7 +45,7 @@ public class MessageServiceImpl implements IMessageService {
      * @return
      */
     @Override
-    @HystrixCommand(fallbackMethod = "messageSynchronizateFallBack")
+    @HystrixCommand(fallbackMethod = "memoryMessageSynchronizateFallBack")
     public ServerResponse<MemoryMessageSynchronizate> memoryMessageSynchronizate(MemoryMessageSynchronizate messageSynchronizate) {
         if (logger.isInfoEnabled()) {
             logger.info("接收到同步内存消息请求,{}", JSON.toJSONString(messageSynchronizate));
@@ -53,7 +54,23 @@ public class MessageServiceImpl implements IMessageService {
 
     }
 
-    public ServerResponse messageSynchronizateFallBack(AbstractBaseMessageRequest message, Throwable e) {
-        return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(), Const.exceptionErrorCode.NOTICE_ERROR_CODE, e.getMessage(), message);
+
+    public ServerResponse<MemoryMessageSynchronizate> memoryMessageSynchronizateFallBack(MemoryMessageSynchronizate message, Throwable e) {
+        return messageSynchronizateFallBack(message, e);
     }
+
+    public ServerResponse<EntryMessageSynchronizate> entryMessageSynchronizateFallBack(EntryMessageSynchronizate message, Throwable e) {
+        return messageSynchronizateFallBack(message, e);
+    }
+
+    private ServerResponse messageSynchronizateFallBack(AbstractBaseMessageRequest message, Throwable e) {
+        if (logger.isErrorEnabled()) {
+            logger.error(StringUtil.commonLogStart() + "消息发送失败，{}", message.getSerialNumber(), message.getRequestId(), e.getMessage());
+            logger.error(""+e,e);
+        }
+        return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(), Const.exceptionErrorCode.NOTICE_ERROR_CODE, e.getMessage(), message);
+
+    }
+
+
 }
