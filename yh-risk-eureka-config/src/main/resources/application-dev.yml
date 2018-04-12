@@ -16,7 +16,7 @@ spring:
     password: 415ilyILY
   cloud:
     config:
-      label: master
+      label: eureka
       server:
         git: #配置git仓库地址
           basedir: D:/workplace/idea/yh-risk-eureka-parent
