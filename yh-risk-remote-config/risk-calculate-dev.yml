@@ -88,6 +88,7 @@ yhfin:
       riskStockBoundCfgQuerySameReports: SELECT TRIM(A.VC_TABLE_SHORT) AS VC_TABLE_SHORT,TRIM(A.VC_CHECK_FIELD)  AS VC_CHECK_FIELD FROM RISK_STOCK_BOUND_CFG A WHERE A.C_CAN_LIKECURR = 1
       memoryIndexQuery: SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE TABLE_SCHEMA = 'PUBLIC'   GROUP BY INDEX_NAME
 
+
 risk-bus:
   ribbon:
     #请求连接时间
@@ -111,7 +112,7 @@ hystrix:
             timeoutInMilliseconds: 8000
 
 server:
-  port: 9008
+  port: 9006
 
 spring:
   #消息中间件rabbitmq配置
@@ -164,4 +165,6 @@ spring:
       settings:
        #h2数据库是否可以允许所有ip端web端查看
         web-allow-others: true
+
+
 
