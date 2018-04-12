@@ -1,8 +1,7 @@
-package com.yhfin.risk.calculate;
+package com.yhfin.risk.controller.calculate;
 
 import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.common.pojos.notice.StaticCalculateResult;
-import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;
 import com.yhfin.risk.common.requests.calculate.StaticCalculateRequest;
 import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
 import com.yhfin.risk.common.responses.ServerResponse;
@@ -15,10 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 静态计算请求

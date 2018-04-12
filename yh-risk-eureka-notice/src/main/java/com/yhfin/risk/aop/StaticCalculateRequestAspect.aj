@@ -1,7 +1,6 @@
 package com.yhfin.risk.aop;
 
 import com.yhfin.risk.common.consts.Const;
-import com.yhfin.risk.common.exceptions.YhRiskNoticeException;
 import com.yhfin.risk.common.pojos.sql.SqlProperties;
 import com.yhfin.risk.common.requests.calculate.StaticCalculateRequest;
 import com.yhfin.risk.common.responses.ServerResponse;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 静态风控aop
@@ -36,7 +34,7 @@ public class StaticCalculateRequestAspect {
     @Autowired
     private SqlProperties sqlProperties;
 
-    @Around("execution(* com.yhfin.risk.calculate.StaticCalculateController.staticCalculate(..))")
+    @Around("execution(* com.yhfin.risk.controller.calculate.StaticCalculateController.staticCalculate(..))")
     public Object staticCalculateAspect(ProceedingJoinPoint joinPoint) {
         StaticCalculateRequest calculateRequest = (StaticCalculateRequest) joinPoint.getArgs()[0];
         if (calculateRequest == null) {

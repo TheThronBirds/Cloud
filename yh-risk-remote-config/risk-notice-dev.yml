@@ -78,37 +78,45 @@ server:
   port: 9004
 
 spring:
-  cloud:
-    loadbalancer:
-      retry:
-        #重试机制开启
-        enabled: true
-  #消息中间件rabbitmq配置      
+  #消息中间件rabbitmq配置
   rabbitmq:
     host: 192.168.100.100
     prot: 5672
     username: admin
     password: 415ilyILY
+  cloud:
+    stream:
+      bindings:
+        entry:
+           destination: entry-channel
+           contentType: application/json
+        memory:
+          destination: memory-channel
+          contentType: application/json
+        analy:
+           destination: analy-channel
+           contentType: application/json
+        calculate:
+          destination: calculate-channel
+          contentType: application/json
+        risk:
+          destination: risk-channel
+          contentType: application/json
+        queryCalculate:
+          destination: queryCalculate-channel
+          contentType: application/json
+    loadbalancer:
+      retry:
+        #重试机制开启
+        enabled: true
   #redis集群配置
   redis:
     cluster:
       #redis集群节点配置
-      nodes: 
+      nodes:
         - 192.168.100.100:7001
         - 192.168.100.100:7002
         - 192.168.100.100:7003
         - 192.168.100.100:7004
         - 192.168.100.100:7005
         - 192.168.100.100:7006
-  #h2数据库配置      
-  h2:
-    console:
-      #h2数据库是否可以允许web端查看
-      enabled: true
-      settings:
-       #h2数据库是否可以允许所有ip端web端查看
-        web-allow-others: true
-
-
-
-        
