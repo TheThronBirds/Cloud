@@ -82,17 +82,15 @@ public class AnalyInstructionCalculateAspect {
         if (entryVersionNumber.compareTo(ownEntryVersionNumber) == 0) {
             return;
         }
-        //TODO  版本管理     条目版本号
         if (entryVersionNumber > ownEntryVersionNumber) {
             while (entryVersionNumber > ownEntryVersionNumber) {
                 ownEntryVersionNumber++;
                 EntryMessageSynchronizate message = (EntryMessageSynchronizate) SerializeUtil.unserialize(
                         jedisCluster.hget(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_ENTRY, String.valueOf(ownEntryVersionNumber).getBytes()));
                 entrySynchronizateService.entrySynchronizateByMessage(message);
+                ownEntryVersionNumber = entrySynchronizateService.getEntryVersionNumber();
             }
-            entrySynchronizateService.setEntryVersionNumber(entryVersionNumber);
         }
-
 
     }
 
@@ -105,17 +103,15 @@ public class AnalyInstructionCalculateAspect {
         if (memoryVersionNumber.compareTo(ownMemoryVersionNumber) == 0) {
             return;
         }
-        //TODO  版本管理   内存版本号
         if (memoryVersionNumber > ownMemoryVersionNumber) {
             while (memoryVersionNumber > ownMemoryVersionNumber) {
                 ownMemoryVersionNumber++;
                 MemoryMessageSynchronizate message = (MemoryMessageSynchronizate) SerializeUtil.unserialize(
                         jedisCluster.hget(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_MEMORY, String.valueOf(ownMemoryVersionNumber).getBytes()));
                 memorySynchronizateService.memorySynchronizateByMessage(message);
+                ownMemoryVersionNumber = memorySynchronizateService.getMemoryVersionNumber();
             }
-            memorySynchronizateService.setMemoryVersionNumber(memoryVersionNumber);
         }
-
     }
 
 }
