@@ -100,6 +100,18 @@ risk-calculate:
     MaxAutoRetriesNextServer: 2
     #对当前实例的重试次数
     MaxAutoRetries: 1
+risk-bus:
+  ribbon:
+    #请求连接时间
+    ConnectTimeout: 250
+    #请求处理的超时时间
+    ReadTimeout: 2000
+    #多所有操作请求都进行重试
+    OkToRetryOnAllOperations: true
+    #切换实例重试次数
+    MaxAutoRetriesNextServer: 2
+    #对当前实例的重试次数
+    MaxAutoRetries: 1
 
 hystrix:
   command:

@@ -4,7 +4,7 @@ yhfin:
     swagger: true
   data:
     #数据源实例注入 配置
-    config: risk,redis
+    config: risk
     #内存数据库配置
     memory:
       #通过kettle同步内存数据配置
@@ -16,7 +16,7 @@ yhfin:
         #执行kettle文件的job对应的仓库
         reposity:
         #执行kettle文件的job对应的仓库的文件夹路径
-         path: F:/kettle 
+         path: F:/kettle
       #内存数据源名称
       dataSourceName: memoryDataSource
       #内存数据源jdbc操作实例名称
@@ -26,7 +26,7 @@ yhfin:
       #内存数据源web登录用户名
       username: sa
       #内存数据源web登录用户名对应的密码
-      password: 
+      password:
       #内存数据库驱动类型
       driverClassName: org.h2.Driver
       #内存数据源 生命式数据源 事物实例名称
@@ -47,23 +47,13 @@ yhfin:
       driverClassName: oracle.jdbc.OracleDriver
       #风控数据源 生命式数据源 事物实例名称
       transactionManager: RisktransactionManager
-    #sql配置  
+    #sql配置
     tableSqls:
       #查询所有风控条目
       riskSetQueryRiskIdAll: SELECT I_RISK_ID FROM RISKSET WHERE I_RISK_ID > 0
 
-risk-analy:
-  ribbon:
-    #请求连接时间
-    ConnectTimeout: 250
-    #请求处理的超时时间
-    ReadTimeout: 2000
-    #多所有操作请求都进行重试
-    OkToRetryOnAllOperations: true
-    #切换实例重试次数
-    MaxAutoRetriesNextServer: 2
-    #对当前实例的重试次数
-    MaxAutoRetries: 1
+
+
 risk-bus:
   ribbon:
     #请求连接时间
@@ -87,7 +77,7 @@ hystrix:
             timeoutInMilliseconds: 8000
 
 server:
-  port: 9004
+  port: 9009
 
 spring:
   #消息中间件rabbitmq配置
@@ -121,14 +111,4 @@ spring:
       retry:
         #重试机制开启
         enabled: true
-  #redis集群配置
-  redis:
-    cluster:
-      #redis集群节点配置
-      nodes:
-        - 192.168.100.100:7001
-        - 192.168.100.100:7002
-        - 192.168.100.100:7003
-        - 192.168.100.100:7004
-        - 192.168.100.100:7005
-        - 192.168.100.100:7006
+

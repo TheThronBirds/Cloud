@@ -88,7 +88,7 @@ yhfin:
       riskStockBoundCfgQuerySameReports: SELECT TRIM(A.VC_TABLE_SHORT) AS VC_TABLE_SHORT,TRIM(A.VC_CHECK_FIELD)  AS VC_CHECK_FIELD FROM RISK_STOCK_BOUND_CFG A WHERE A.C_CAN_LIKECURR = 1
       memoryIndexQuery: SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE TABLE_SCHEMA = 'PUBLIC'   GROUP BY INDEX_NAME
 
-risk-calculate:
+risk-bus:
   ribbon:
     #请求连接时间
     ConnectTimeout: 250

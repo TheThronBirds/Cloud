@@ -30,9 +30,7 @@ public class StaticSingleFundCalculateController {
     @RequestMapping(value = "/staticSingleCalculate")
     public ServerResponse<StaticSingleFundCalculateResult> staticSingleFundCalculate(StaticSingleFundCalculateRequest calculateRequest) {
         StaticSingleFundCalculateResult calculateResult = new StaticSingleFundCalculateResult(calculateRequest.getRequestId(), calculateRequest.getSerialNumber(), calculateRequest.getFundId());
-        //TODO  对请求进行发起分析  判断条目版本号   判断内存版本号
         CompletableFuture.runAsync(() -> analyService.stockInstructionCalculateRequestSingleFund(calculateRequest.getFundId(), calculateRequest.getRiskIds(), calculateRequest.getRequestId(), calculateRequest.getSerialNumber()));
-
         return ServerResponse.createBySuccess(calculateRequest.getRequestId(), calculateRequest.getSerialNumber(), calculateResult);
     }
 
