@@ -112,7 +112,7 @@ hystrix:
             timeoutInMilliseconds: 8000
 
 server:
-  port: 9006
+  port: 9018
 
 spring:
   #消息中间件rabbitmq配置
