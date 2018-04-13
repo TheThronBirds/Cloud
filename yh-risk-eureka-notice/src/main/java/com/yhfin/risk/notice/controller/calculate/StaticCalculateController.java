@@ -1,10 +1,13 @@
 package com.yhfin.risk.notice.controller.calculate;
 
 import com.alibaba.fastjson.JSON;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.pojos.notice.StaticCalculateResult;
 import com.yhfin.risk.common.requests.calculate.StaticCalculateRequest;
 import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
 import com.yhfin.risk.common.responses.ServerResponse;
+import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.notice.service.ICalculateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,7 @@ public class StaticCalculateController {
 
 
     @RequestMapping(value = "/staticCalculate", method = RequestMethod.POST)
+    @HystrixCommand(fallbackMethod = "staticCalculateFallBack")
     public ServerResponse<StaticCalculateResult> staticCalculate(@RequestBody StaticCalculateRequest calculateRequest) {
         if (logger.isErrorEnabled()) {
             logger.info("收到静态计算请求,{}", JSON.toJSONString(calculateRequest));
@@ -48,5 +52,13 @@ public class StaticCalculateController {
         return ServerResponse.createBySuccess(calculateRequest.getRequestId(), calculateRequest.getSerialNumber(), calculateResult);
     }
 
+
+    public ServerResponse<StaticCalculateResult> staticCalculateFallBack(StaticCalculateRequest calculateRequest, Throwable e) {
+        if (logger.isErrorEnabled()) {
+            logger.error(StringUtil.commonLogStart() + "静态风控请求发生错误," + e.getMessage(), calculateRequest.getSerialNumber(), calculateRequest.getRequestId());
+            logger.error("" + e, e);
+        }
+        return ServerResponse.createByError(calculateRequest.getRequestId(), calculateRequest.getSerialNumber(), Const.exceptionErrorCode.NOTICE_ERROR_CODE, e.getMessage());
+    }
 
 }

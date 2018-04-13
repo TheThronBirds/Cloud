@@ -1,5 +1,6 @@
 package com.yhfin.risk.notice.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;
@@ -10,6 +11,9 @@ import com.yhfin.risk.notice.service.ICalculateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -39,6 +43,7 @@ public class CalculateServiceImpl implements ICalculateService {
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "发起单个基金，基金序号{},分析计算请求", calculateRequest.getSerialNumber(), calculateRequest.getRequestId(), calculateRequest.getFundId());
         }
+       // String result = restTemplate.postForObject("http://RISK-ANALY/yhfin/analy/staticSingleCalculate", calculateRequest, String.class);
         return restTemplate.postForObject("http://RISK-ANALY/yhfin/analy/staticSingleCalculate", calculateRequest, ServerResponse.class);
     }
 
