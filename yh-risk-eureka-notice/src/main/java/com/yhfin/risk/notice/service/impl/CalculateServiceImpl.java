@@ -43,8 +43,8 @@ public class CalculateServiceImpl implements ICalculateService {
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "发起单个基金，基金序号{},分析计算请求", calculateRequest.getSerialNumber(), calculateRequest.getRequestId(), calculateRequest.getFundId());
         }
-       // String result = restTemplate.postForObject("http://RISK-ANALY/yhfin/analy/staticSingleCalculate", calculateRequest, String.class);
-        return restTemplate.postForObject("http://RISK-ANALY/yhfin/analy/staticSingleCalculate", calculateRequest, ServerResponse.class);
+        String result = restTemplate.postForObject("http://RISK-ANALY/yhfin/analy/staticSingleCalculate", calculateRequest, String.class);
+        return StringUtil.parseJsonObject(result, StaticSingleFundCalculateResult.class);
     }
 
 

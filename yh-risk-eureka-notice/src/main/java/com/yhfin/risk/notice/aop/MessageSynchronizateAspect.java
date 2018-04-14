@@ -1,5 +1,6 @@
 package com.yhfin.risk.notice.aop;
 
+import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.requests.message.AbstractBaseMessageRequest;
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
@@ -24,8 +25,7 @@ public class MessageSynchronizateAspect {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private IJedisClusterDao jedisClusterDao;
+
 
     @Pointcut("execution(* com.yhfin.risk.notice.service.IMessageService.*(..))")
     public void messageSynchronizate() {
@@ -38,22 +38,11 @@ public class MessageSynchronizateAspect {
         Object[] args = joinPoint.getArgs();
         AbstractBaseMessageRequest message = (AbstractBaseMessageRequest) args[0];
         if (message == null || StringUtils.isBlank(message.getRequestId()) || StringUtils.isBlank(message.getSerialNumber())) {
+            if(logger.isErrorEnabled()){
+                logger.info("发送同步消息失败，请求序号为空或者流水号为空,{}", JSON.toJSONString(message));
+            }
             throw new RuntimeException("发送同步消息失败，请求序号为空或者流水号为空");
         }
     }
 
-    @AfterReturning(value = "messageSynchronizate()", returning = "result")
-    public void afterMessageSynchronizate(JoinPoint joinPoint, ServerResponse result) {
-        if (result.isSuccess()) {
-            Object data = result.getData();
-            if (data instanceof MemoryMessageSynchronizate) {
-                MemoryMessageSynchronizate message = (MemoryMessageSynchronizate) data;
-                jedisClusterDao.hset(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_MEMORY, String.valueOf(message.getMemoryVersionNumber()).getBytes(), SerializeUtil.serialize(message));
-            } else if (data instanceof EntryMessageSynchronizate) {
-                EntryMessageSynchronizate message = (EntryMessageSynchronizate) data;
-                jedisClusterDao.hset(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_ENTRY, String.valueOf(message.getEntryVersionNumber()).getBytes(), SerializeUtil.serialize(message));
-            }
-
-        }
-    }
 }

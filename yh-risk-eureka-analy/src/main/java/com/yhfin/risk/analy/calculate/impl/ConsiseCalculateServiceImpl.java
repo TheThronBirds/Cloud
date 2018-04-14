@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+import com.netflix.hystrix.HystrixCollapser.Scope;
 @Service
 public class ConsiseCalculateServiceImpl implements IConsiseCalculateService {
 
@@ -24,7 +24,6 @@ public class ConsiseCalculateServiceImpl implements IConsiseCalculateService {
     private RestTemplate restTemplate;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     /**
      * 发送计算请求
      *
@@ -32,8 +31,9 @@ public class ConsiseCalculateServiceImpl implements IConsiseCalculateService {
      * @return
      */
     @Override
-    @HystrixCollapser(batchMethod = "sendConsiseCalculatesFallBack", collapserProperties = {
-            @HystrixProperty(name = "timerDelayInMilliseconds", value = "100")
+    @HystrixCollapser(batchMethod = "sendConsiseCalculates",scope = Scope.GLOBAL,collapserProperties = {
+            @HystrixProperty(name = "timerDelayInMilliseconds", value = "100"),
+            @HystrixProperty(name = "maxRequestsInBatch", value = "200")
     })
     public ServerResponse<String> sendConsiseCalculate(EntryConciseCalculateInfo conciseCalculateInfo) {
         if (logger.isInfoEnabled()) {

@@ -1,6 +1,7 @@
 package com.yhfin.risk.calculate.accept;
 
 import com.alibaba.fastjson.JSON;
+import com.yhfin.risk.calculate.service.IEntryConsiseCalculateService;
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.pojos.calculate.EntryCalculateResult;
 import com.yhfin.risk.common.pojos.calculate.EntryConciseCalculateInfo;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.spring.web.json.Json;
 
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,27 +34,30 @@ public class CalculateController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private IInstructionRequestCalculateService calculateService;
+   private IEntryConsiseCalculateService entryConsiseCalculateService;
+
+
+    private ExecutorService executorService = new ThreadPoolExecutor(3, 500, 0L, TimeUnit.MICROSECONDS,
+            new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
 
     @RequestMapping(value = "/consiseCalculate", method = RequestMethod.POST)
     public ServerResponse<String> consiseCalculate(@RequestBody EntryConciseCalculateInfo conciseCalculateInfo) {
-        if (logger.isInfoEnabled()) {
-            logger.info(StringUtil.commonLogStart() + "接收到计算请求，{}" + conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getFundId(), JSON.toJSONString(conciseCalculateInfo));
-        }
-
-        EntryCalculateResult result = calculateService.calculateRequest(conciseCalculateInfo, conciseCalculateInfo.getFundId());
-        if (logger.isInfoEnabled()) {
-            logger.info(StringUtil.commonLogStart() + "接收到计算请求，计算唯一标识{},计算结果:{}" + conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getFundId(), conciseCalculateInfo.getResultKey(), JSON.toJSONString(result));
-        }
-        return ServerResponse.createBySuccess(conciseCalculateInfo.getRequestId(), conciseCalculateInfo.getSerialNumber());
+        return entryConsiseCalculateService.consiseCalculate(conciseCalculateInfo);
     }
 
 
     @RequestMapping(value = "/consiseCalculates", method = RequestMethod.POST)
     public List<ServerResponse<String>> consiseCalculates(@RequestBody List<EntryConciseCalculateInfo> conciseCalculateInfos) {
         if (logger.isInfoEnabled()) {
-            logger.info(StringUtil.commonLogStart() + "接收到{}条计算请求" + conciseCalculateInfos.get(0).getSerialNumber(), conciseCalculateInfos.get(0).getFundId(), conciseCalculateInfos.size());
+            logger.info(StringUtil.commonLogStart() + "接收到{}条计算请求" + conciseCalculateInfos.get(0).getSerialNumber(), conciseCalculateInfos.get(0).getRequestId(), conciseCalculateInfos.size());
         }
+        CompletableFuture.runAsync(() -> {
+            conciseCalculateInfos.stream().parallel().forEach((item) -> {
+                CompletableFuture.runAsync(() -> {
+                    entryConsiseCalculateService.consiseCalculate(item);
+                },executorService);
+            });
+        }, executorService);
         return conciseCalculateInfos.parallelStream().map((item) -> ServerResponse.createBySuccess(item.getRequestId(), item.getSerialNumber(), "")).collect(Collectors.toList());
     }
 

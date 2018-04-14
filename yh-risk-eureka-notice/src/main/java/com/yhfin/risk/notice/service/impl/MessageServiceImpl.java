@@ -7,7 +7,9 @@ import com.yhfin.risk.common.requests.message.AbstractBaseMessageRequest;
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
 import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
+import com.yhfin.risk.common.utils.SerializeUtil;
 import com.yhfin.risk.common.utils.StringUtil;
+import com.yhfin.risk.core.dao.IJedisClusterDao;
 import com.yhfin.risk.notice.service.IMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,20 @@ import org.springframework.web.client.RestTemplate;
 public class MessageServiceImpl implements IMessageService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    /**
+     * 内存同步在redis中存储的消息，hashkey值
+     */
+    private final byte[] MEMORY = "MEMORY".getBytes();
+    /**
+     * 条目同步在redis中存储的消息，hashkey值
+     */
+    private final byte[] ENTRY = "ENTRY".getBytes();
+
+
+    @Autowired
+    private IJedisClusterDao jedisClusterDao;
+
 
     @Autowired
     private RestTemplate restTemplate;
@@ -33,9 +49,22 @@ public class MessageServiceImpl implements IMessageService {
     @HystrixCommand(fallbackMethod = "entryMessageSynchronizateFallBack")
     public ServerResponse<EntryMessageSynchronizate> entryMessageSynchronizate(EntryMessageSynchronizate messageSynchronizate) {
         if (logger.isInfoEnabled()) {
-            logger.info("接收到同步条目消息请求,{}", JSON.toJSONString(messageSynchronizate));
+            logger.info("发送同步条目消息请求,{}", JSON.toJSONString(messageSynchronizate));
         }
-        return restTemplate.postForObject("http://RISK-BUS/yhfin/bus/entryMessageSynchronizate", messageSynchronizate, ServerResponse.class);
+        byte[] versionBytes = jedisClusterDao.hget(Const.cacheKey.CACHE_SYNCHRONIZATE_VERSION, ENTRY);
+        Integer versionNumber = null;
+        if(versionBytes == null){
+            versionNumber = 0;
+        }else{
+             versionNumber = Integer.valueOf(new String(versionBytes)) + 1;
+        }
+        messageSynchronizate.setEntryVersionNumber(versionNumber);
+        ServerResponse serverResponse =  restTemplate.postForObject("http://RISK-BUS/yhfin/bus/entryMessageSynchronizate", messageSynchronizate, ServerResponse.class);
+        if(serverResponse.isSuccess()) {
+            jedisClusterDao.hset(Const.cacheKey.CACHE_SYNCHRONIZATE_VERSION, ENTRY, String.valueOf(versionNumber).getBytes());
+            jedisClusterDao.hset(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_ENTRY, String.valueOf(versionNumber).getBytes(), SerializeUtil.serialize(messageSynchronizate));
+        }
+        return serverResponse;
     }
 
     /**
@@ -48,10 +77,22 @@ public class MessageServiceImpl implements IMessageService {
     @HystrixCommand(fallbackMethod = "memoryMessageSynchronizateFallBack")
     public ServerResponse<MemoryMessageSynchronizate> memoryMessageSynchronizate(MemoryMessageSynchronizate messageSynchronizate) {
         if (logger.isInfoEnabled()) {
-            logger.info("接收到同步内存消息请求,{}", JSON.toJSONString(messageSynchronizate));
+            logger.info("发送同步内存消息请求,{}", JSON.toJSONString(messageSynchronizate));
         }
-        return restTemplate.postForObject("http://RISK-BUS/yhfin/bus/memoryMessageSynchronizate", messageSynchronizate, ServerResponse.class);
-
+        byte[] versionBytes = jedisClusterDao.hget(Const.cacheKey.CACHE_SYNCHRONIZATE_VERSION, MEMORY);
+        Integer versionNumber = null;
+        if(versionBytes == null){
+            versionNumber = 0;
+        }else{
+            versionNumber = Integer.valueOf(new String(versionBytes)) + 1;
+        }
+        messageSynchronizate.setMemoryVersionNumber(versionNumber);
+        ServerResponse serverResponse = restTemplate.postForObject("http://RISK-BUS/yhfin/bus/memoryMessageSynchronizate", messageSynchronizate, ServerResponse.class);
+        if(serverResponse.isSuccess()){
+            jedisClusterDao.hset(Const.cacheKey.CACHE_SYNCHRONIZATE_VERSION, MEMORY, String.valueOf(versionNumber).getBytes());
+            jedisClusterDao.hset(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_MEMORY, String.valueOf(versionNumber).getBytes(), SerializeUtil.serialize(messageSynchronizate));
+        }
+        return  serverResponse;
     }
 
 

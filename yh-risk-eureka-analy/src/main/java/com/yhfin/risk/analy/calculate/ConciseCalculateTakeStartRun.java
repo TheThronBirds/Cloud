@@ -1,15 +1,18 @@
 package com.yhfin.risk.analy.calculate;
 
+import com.alibaba.fastjson.JSON;
 import com.netflix.discovery.converters.Auto;
 import com.yhfin.risk.common.pojos.calculate.EntryConciseCalculateInfo;
+import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.core.analy.optimize.IConciseCalculateRequesttService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import springfox.documentation.spring.web.json.Json;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 
 @Component
 /**
@@ -27,6 +30,9 @@ public class ConciseCalculateTakeStartRun implements CommandLineRunner {
     @Autowired
     private IConsiseCalculateService consiseCalculateService;
 
+    private ExecutorService executorService = new ThreadPoolExecutor(3, 500, 0L, TimeUnit.MICROSECONDS,
+            new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
+
     /**
      * Callback used to run the bean.
      *
@@ -35,10 +41,22 @@ public class ConciseCalculateTakeStartRun implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        EntryConciseCalculateInfo conciseCalculateInfo = conciseCalculateRequesttService.take();
-        CompletableFuture.runAsync(() -> {
-            consiseCalculateService.sendConsiseCalculate(conciseCalculateInfo);
+        takeConciseCalculate();
+    }
+
+    public void takeConciseCalculate() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                EntryConciseCalculateInfo conciseCalculateInfo = conciseCalculateRequesttService.take();
+                if (logger.isInfoEnabled()) {
+                    logger.info(StringUtil.commonLogStart() + "发送计算请求,{}", conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getRequestId(), JSON.toJSONString(conciseCalculateInfo));
+                }
+                CompletableFuture.runAsync(() -> {
+                    consiseCalculateService.sendConsiseCalculate(conciseCalculateInfo);
+                }, executorService);
+            }
         });
+        thread.start();
 
     }
 }

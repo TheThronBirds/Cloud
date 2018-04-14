@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 public class MessageServiceImpl implements IMessageService {
 
@@ -33,6 +35,8 @@ public class MessageServiceImpl implements IMessageService {
         if (logger.isDebugEnabled()) {
             logger.debug(StringUtil.commonLogStart() + "收到消息服务器，同步内存消息,消息:{}", message.getSerialNumber(), message.getRequestId(), JSON.toJSONString(message));
         }
-        memorySynchronizateService.memorySynchronizateByMessage(message);
+        CompletableFuture.runAsync(() -> {
+            memorySynchronizateService.memorySynchronizateByMessage(message);
+        });
     }
 }
