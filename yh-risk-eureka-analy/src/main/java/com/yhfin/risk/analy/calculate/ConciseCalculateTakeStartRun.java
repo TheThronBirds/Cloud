@@ -43,16 +43,17 @@ public class ConciseCalculateTakeStartRun implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         takeConciseCalculate();
+        takeConciseCalculateResultBaseInfo();
     }
 
     public void takeConciseCalculate() {
         Thread thread = new Thread(() -> {
             while (true) {
                 EntryConciseCalculateInfo conciseCalculateInfo = conciseCalculateRequesttService.take();
-                if (logger.isInfoEnabled()) {
-                    logger.info(StringUtil.commonLogStart() + "发送计算请求,{}", conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getRequestId(), JSON.toJSONString(conciseCalculateInfo));
-                }
                 CompletableFuture.runAsync(() -> {
+                    if (logger.isInfoEnabled()) {
+                        logger.info(StringUtil.commonLogStart() + "发送计算请求,{}", conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getRequestId(), JSON.toJSONString(conciseCalculateInfo));
+                    }
                     consiseCalculateService.sendConsiseCalculate(conciseCalculateInfo);
                 }, executorService);
             }
@@ -64,10 +65,10 @@ public class ConciseCalculateTakeStartRun implements CommandLineRunner {
         Thread thread = new Thread(() -> {
             while (true) {
                 EntryCalculateBaseInfo calculateBaseInfo = conciseCalculateRequesttService.takeCalculateBaseInfo();
-                if (logger.isInfoEnabled()) {
-                    logger.info(StringUtil.commonLogStart() + "发送计算请求结果基本信息,{}", calculateBaseInfo.getSerialNumber(), calculateBaseInfo.getRequestId(), JSON.toJSONString(calculateBaseInfo));
-                }
                 CompletableFuture.runAsync(() -> {
+                    if (logger.isInfoEnabled()) {
+                        logger.info(StringUtil.commonLogStart() + "发送计算请求结果基本信息,{}", calculateBaseInfo.getSerialNumber(), calculateBaseInfo.getRequestId(), JSON.toJSONString(calculateBaseInfo));
+                    }
                     consiseCalculateService.sendConsiseCalculateBaseInfo(calculateBaseInfo);
                 }, executorService);
             }

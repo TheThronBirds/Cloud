@@ -9,6 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -20,6 +23,8 @@ import java.util.stream.Collectors;
  * @author youlangta
  * @since 2018-04-16
  */
+@RestController
+@RequestMapping("/yhfin/result")
 public class CalculateResultController {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -30,6 +35,7 @@ public class CalculateResultController {
     @Autowired
     private ICalculateResultHandelService resulteHandelService;
 
+    @RequestMapping(value = "/consiseCalculateBaseInfos",method = RequestMethod.POST)
     public List<ServerResponse<String>> consiseCalculateBaseInfos(@RequestBody List<EntryCalculateBaseInfo> calculateBaseInfos) {
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "接收到{}条计算结果基本信息" + calculateBaseInfos.get(0).getSerialNumber(), calculateBaseInfos.get(0).getRequestId(), calculateBaseInfos.size());
@@ -40,7 +46,7 @@ public class CalculateResultController {
         return calculateBaseInfos.parallelStream().map((item) -> ServerResponse.createBySuccess(item.getRequestId(), item.getSerialNumber(), "")).collect(Collectors.toList());
     }
 
-
+    @RequestMapping(value = "/consiseCalculateResultInfos",method = RequestMethod.POST)
     public List<ServerResponse<String>> consiseCalculateResultInfos(@RequestBody List<EntryCalculateResult> calculateResults) {
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "接收到{}条计算结果基本信息" + calculateResults.get(0).getSerialNumber(), calculateResults.get(0).getRequestId(), calculateResults.size());

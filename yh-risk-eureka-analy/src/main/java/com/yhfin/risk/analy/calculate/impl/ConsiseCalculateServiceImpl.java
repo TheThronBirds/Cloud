@@ -91,7 +91,7 @@ public class ConsiseCalculateServiceImpl implements IConsiseCalculateService {
         return restTemplate.postForObject("http://RISK-RESULT/yhfin/result/consiseCalculateBaseInfos", calculateBaseInfos, List.class);
     }
 
-    public List<ServerResponse<String>> sendConsiseCalculateBaseInfos(List<EntryCalculateBaseInfo> calculateBaseInfos, Throwable e) {
+    public List<ServerResponse<String>> sendConsiseCalculateBaseInfosFallBack(List<EntryCalculateBaseInfo> calculateBaseInfos, Throwable e) {
         if (logger.isErrorEnabled()) {
             logger.error(StringUtil.commonLogStart() + "发起单个基金，计算请求基本结果信息,发生错误", calculateBaseInfos.get(0).getSerialNumber(), calculateBaseInfos.get(0).getRequestId());
             logger.error("" + e, e);

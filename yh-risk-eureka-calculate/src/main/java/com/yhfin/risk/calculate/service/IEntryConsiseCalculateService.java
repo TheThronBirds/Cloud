@@ -1,5 +1,6 @@
 package com.yhfin.risk.calculate.service;
 
+import com.yhfin.risk.common.pojos.calculate.EntryCalculateResult;
 import com.yhfin.risk.common.pojos.calculate.EntryConciseCalculateInfo;
 import com.yhfin.risk.common.responses.ServerResponse;
 
@@ -12,4 +13,6 @@ import com.yhfin.risk.common.responses.ServerResponse;
 public interface IEntryConsiseCalculateService {
 
     ServerResponse<String> consiseCalculate(EntryConciseCalculateInfo conciseCalculateInfo);
+
+
 }

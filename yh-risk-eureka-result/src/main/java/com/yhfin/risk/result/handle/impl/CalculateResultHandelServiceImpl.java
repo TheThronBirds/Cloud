@@ -6,9 +6,10 @@ import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.result.handle.ICalculateResultHandelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class CalculateResultHandelServiceImpl implements ICalculateResultHandelService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
