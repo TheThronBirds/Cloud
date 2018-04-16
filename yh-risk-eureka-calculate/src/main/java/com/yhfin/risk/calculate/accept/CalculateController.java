@@ -34,7 +34,7 @@ public class CalculateController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-   private IEntryConsiseCalculateService entryConsiseCalculateService;
+    private IEntryConsiseCalculateService entryConsiseCalculateService;
 
 
     private ExecutorService executorService = new ThreadPoolExecutor(3, 500, 0L, TimeUnit.MICROSECONDS,
@@ -55,7 +55,7 @@ public class CalculateController {
             conciseCalculateInfos.stream().parallel().forEach((item) -> {
                 CompletableFuture.runAsync(() -> {
                     entryConsiseCalculateService.consiseCalculate(item);
-                },executorService);
+                }, executorService);
             });
         }, executorService);
         return conciseCalculateInfos.parallelStream().map((item) -> ServerResponse.createBySuccess(item.getRequestId(), item.getSerialNumber(), "")).collect(Collectors.toList());

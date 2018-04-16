@@ -2,6 +2,7 @@ package com.yhfin.risk.analy.calculate;
 
 import com.alibaba.fastjson.JSON;
 import com.netflix.discovery.converters.Auto;
+import com.yhfin.risk.common.pojos.analy.EntryCalculateBaseInfo;
 import com.yhfin.risk.common.pojos.calculate.EntryConciseCalculateInfo;
 import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.core.analy.optimize.IConciseCalculateRequesttService;
@@ -57,6 +58,22 @@ public class ConciseCalculateTakeStartRun implements CommandLineRunner {
             }
         });
         thread.start();
-
     }
+
+    public void takeConciseCalculateResultBaseInfo() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                EntryCalculateBaseInfo calculateBaseInfo = conciseCalculateRequesttService.takeCalculateBaseInfo();
+                if (logger.isInfoEnabled()) {
+                    logger.info(StringUtil.commonLogStart() + "发送计算请求结果基本信息,{}", calculateBaseInfo.getSerialNumber(), calculateBaseInfo.getRequestId(), JSON.toJSONString(calculateBaseInfo));
+                }
+                CompletableFuture.runAsync(() -> {
+                    consiseCalculateService.sendConsiseCalculateBaseInfo(calculateBaseInfo);
+                }, executorService);
+            }
+        });
+        thread.start();
+    }
+
+
 }
