@@ -69,8 +69,8 @@ public class ConsiseCalculateServiceImpl implements IConsiseCalculateService {
      */
     @Override
     @HystrixCollapser(batchMethod = "sendConsiseCalculateBaseInfos", scope = Scope.GLOBAL, collapserProperties = {
-            @HystrixProperty(name = "timerDelayInMilliseconds", value = "100"),
-            @HystrixProperty(name = "maxRequestsInBatch", value = "200")
+            @HystrixProperty(name = "timerDelayInMilliseconds", value = "500"),
+            @HystrixProperty(name = "maxRequestsInBatch", value = "5000")
     })
     public ServerResponse<String> sendConsiseCalculateBaseInfo(EntryCalculateBaseInfo calculateBaseInfo) {
         return null;

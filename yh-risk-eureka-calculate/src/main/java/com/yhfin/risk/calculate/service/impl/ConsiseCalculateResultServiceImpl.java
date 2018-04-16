@@ -28,8 +28,8 @@ public class ConsiseCalculateResultServiceImpl implements IConsiseCalculateResul
 
     @Override
     @HystrixCollapser(batchMethod = "consiseCalculateResults", scope = Scope.GLOBAL, collapserProperties = {
-            @HystrixProperty(name = "timerDelayInMilliseconds", value = "100"),
-            @HystrixProperty(name = "maxRequestsInBatch", value = "200")
+            @HystrixProperty(name = "timerDelayInMilliseconds", value = "500"),
+            @HystrixProperty(name = "maxRequestsInBatch", value = "5000")
     })
     public ServerResponse<String> consiseCalculateResult(EntryCalculateResult conciseCalculateResult) {
 
