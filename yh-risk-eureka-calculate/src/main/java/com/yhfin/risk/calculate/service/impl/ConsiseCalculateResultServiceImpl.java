@@ -39,7 +39,7 @@ public class ConsiseCalculateResultServiceImpl implements IConsiseCalculateResul
     @HystrixCommand(fallbackMethod = "consiseCalculateResultsFallBack")
     public List<ServerResponse<String>> consiseCalculateResults(List<EntryCalculateResult> conciseCalculateResults) {
         if (logger.isInfoEnabled()) {
-            logger.info(StringUtil.commonLogStart() + "合并发起条目计算结果信息，计算请求,共{}条", conciseCalculateResults.get(0).getSerialNumber(), conciseCalculateResults.get(0).getRequestId(), conciseCalculateResults.size());
+            logger.info(StringUtil.commonLogStart() + "合并发起条目计算结果信息,共{}条", conciseCalculateResults.get(0).getSerialNumber(), conciseCalculateResults.get(0).getRequestId(), conciseCalculateResults.size());
         }
         return restTemplate.postForObject("http://RISK-RESULT/yhfin/result/consiseCalculateResultInfos", conciseCalculateResults, List.class);
     }
@@ -47,7 +47,7 @@ public class ConsiseCalculateResultServiceImpl implements IConsiseCalculateResul
 
     public List<ServerResponse<String>> consiseCalculateResultsFallBack(List<EntryCalculateResult> conciseCalculateResults, Throwable e) {
         if (logger.isErrorEnabled()) {
-            logger.error(StringUtil.commonLogStart() + "合并发起条目计算结果信息,计算请求发生错误", conciseCalculateResults.get(0).getSerialNumber(), conciseCalculateResults.get(0).getRequestId());
+            logger.error(StringUtil.commonLogStart() + "合并发起条目计算结果信息,处理发生错误", conciseCalculateResults.get(0).getSerialNumber(), conciseCalculateResults.get(0).getRequestId());
             logger.error("" + e, e);
         }
         return conciseCalculateResults.parallelStream().map((item) -> ServerResponse.createByError(item.getRequestId(), item.getSerialNumber(), Const.exceptionErrorCode.CALCULATE_ERROR_CODE, e.getMessage(), "")).collect(Collectors.toList());
