@@ -2,6 +2,8 @@ package com.yhfin.risk.notice.service;
 
 import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;
 import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
+import com.yhfin.risk.common.requests.message.AnalyMessageSynchronizate;
+import com.yhfin.risk.common.requests.message.CalculateMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
 
 /**
@@ -16,4 +18,10 @@ public interface ICalculateService {
      * @return
      */
     ServerResponse<StaticSingleFundCalculateResult>  sendSingleStaticCalculate(StaticSingleFundCalculateRequest calculateRequest);
+
+    void handleAnalyMessage(AnalyMessageSynchronizate message);
+
+    void handleCalculateMessage(CalculateMessageSynchronizate message);
+
+    void handleResultMessage();
 }

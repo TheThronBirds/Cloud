@@ -20,9 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class CalculateResultHandelServiceImpl implements ICalculateResultHandelService {
@@ -42,11 +40,8 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
      */
     private final String RISK_RESULT = "RISKRESULT_STATIC_MID_RESULT";
 
-
-
     @Autowired
     private IRiskDao riskDao;
-
 
     /**
      * 接收计算结果基本信息
@@ -113,6 +108,7 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
                         }
                     });
             if (resultCode == 0) {
+                //TODO 告知通知中心  ???
                 if (logger.isErrorEnabled()) {
                     logger.error("批量插入计算结果基本信息失败");
                 }
@@ -144,6 +140,7 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
                         }
                     });
             if (resultCode == 0) {
+                //TODO 告知通知中心  ???
                 if (logger.isErrorEnabled()) {
                     logger.error("批量插入计算结果基本信息失败");
                 }

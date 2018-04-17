@@ -2,6 +2,8 @@ package com.yhfin.risk.notice.service;
 
 
 import com.yhfin.risk.common.consts.Const;
+import com.yhfin.risk.common.requests.message.AnalyMessageSynchronizate;
+import com.yhfin.risk.common.requests.message.CalculateMessageSynchronizate;
 import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
 import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
@@ -29,5 +31,18 @@ public interface IMessageService {
      */
     ServerResponse<MemoryMessageSynchronizate> memoryMessageSynchronizate(MemoryMessageSynchronizate messageSynchronizate);
 
+    /**
+     * 基金分析消息
+     *
+     * @param message
+     */
+    void messageAnaly(AnalyMessageSynchronizate message);
 
+
+    /**
+     * 基金分析消息
+     *
+     * @param message
+     */
+    void messageCalculate(CalculateMessageSynchronizate message);
 }

@@ -139,6 +139,9 @@ spring:
         risk:
           destination: risk-channel
           contentType: application/json
+        result:
+          destination: result-channel
+          contentType: application/json
         queryCalculate:
           destination: queryCalculate-channel
           contentType: application/json

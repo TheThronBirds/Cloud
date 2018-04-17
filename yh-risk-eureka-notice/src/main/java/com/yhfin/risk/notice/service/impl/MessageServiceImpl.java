@@ -3,9 +3,7 @@ package com.yhfin.risk.notice.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.yhfin.risk.common.consts.Const;
-import com.yhfin.risk.common.requests.message.AbstractBaseMessageRequest;
-import com.yhfin.risk.common.requests.message.EntryMessageSynchronizate;
-import com.yhfin.risk.common.requests.message.MemoryMessageSynchronizate;
+import com.yhfin.risk.common.requests.message.*;
 import com.yhfin.risk.common.responses.ServerResponse;
 import com.yhfin.risk.common.utils.SerializeUtil;
 import com.yhfin.risk.common.utils.StringUtil;
@@ -14,8 +12,10 @@ import com.yhfin.risk.notice.service.IMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import springfox.documentation.spring.web.json.Json;
 
 @Service
 public class MessageServiceImpl implements IMessageService {
@@ -93,6 +93,35 @@ public class MessageServiceImpl implements IMessageService {
             jedisClusterDao.hset(Const.cacheKey.CACHE_MESSAGE_SYNCHRONIZATE_MEMORY, String.valueOf(versionNumber).getBytes(), SerializeUtil.serialize(messageSynchronizate));
         }
         return  serverResponse;
+    }
+
+    /**
+     * 基金分析消息
+     *
+     * @param message
+     */
+    @StreamListener("entry")
+    @Override
+    public void messageAnaly(AnalyMessageSynchronizate message) {
+        if (logger.isInfoEnabled()) {
+            logger.info(StringUtil.commonLogStart() + "收到消息服务器，分析基金结果消息,{}", message.getSerialNumber(), message.getRequestId(), JSON.toJSONString(message));
+        }
+
+    }
+
+    /**
+     * 基金分析消息
+     *
+     * @param message
+     */
+    @StreamListener("calculate")
+    @Override
+    public void messageCalculate(CalculateMessageSynchronizate message) {
+        if (logger.isInfoEnabled()) {
+            logger.info(StringUtil.commonLogStart() + "收到消息服务器，计算基金结果消息,{}", message.getSerialNumber(), message.getRequestId(), JSON.toJSONString(message));
+        }
+
+
     }
 
 

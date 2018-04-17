@@ -5,9 +5,12 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.yhfin.risk.common.consts.Const;
 import com.yhfin.risk.common.pojos.notice.StaticSingleFundCalculateResult;
 import com.yhfin.risk.common.requests.calculate.StaticSingleFundCalculateRequest;
+import com.yhfin.risk.common.requests.message.AnalyMessageSynchronizate;
+import com.yhfin.risk.common.requests.message.CalculateMessageSynchronizate;
 import com.yhfin.risk.common.responses.ServerResponse;
 import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.notice.service.ICalculateService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 /**
@@ -32,6 +37,13 @@ public class CalculateServiceImpl implements ICalculateService {
     private RestTemplate restTemplate;
 
     /**
+     * 风控处理结果
+     */
+    private ConcurrentHashMap<String, StaticSingleFundCalculateResult> fundCalculateResults = new ConcurrentHashMap<>(400);
+
+    private String currentSerialNumber;
+
+    /**
      * 单个基金静态计算请求
      *
      * @param calculateRequest
@@ -43,8 +55,39 @@ public class CalculateServiceImpl implements ICalculateService {
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "发起单个基金，基金序号{},分析计算请求", calculateRequest.getSerialNumber(), calculateRequest.getRequestId(), calculateRequest.getFundId());
         }
+        judegeSerialNumber(calculateRequest.getSerialNumber());
+        StaticSingleFundCalculateResult calculateResult = new StaticSingleFundCalculateResult();
+        calculateResult.setRequestId(calculateRequest.getRequestId());
+        calculateResult.setSerialNumber(calculateRequest.getSerialNumber());
+        calculateResult.setFundId(calculateRequest.getFundId());
+        fundCalculateResults.put(calculateResult.getFundId(), calculateResult);
         String result = restTemplate.postForObject("http://RISK-ANALY/yhfin/analy/staticSingleCalculate", calculateRequest, String.class);
         return StringUtil.parseJsonObject(result, StaticSingleFundCalculateResult.class);
+    }
+
+
+    private synchronized void judegeSerialNumber(String serialNumber) {
+        if (!StringUtils.equals(serialNumber, currentSerialNumber)) {
+            fundCalculateResults.clear();
+            this.currentSerialNumber = serialNumber;
+        }
+    }
+
+
+    @Override
+    public void handleAnalyMessage(AnalyMessageSynchronizate message) {
+        fundCalculateResults.get(message.getFundAnalyResult().getFundId()).setFundAnalyResult(message.getFundAnalyResult());
+    }
+
+    @Override
+    public void handleCalculateMessage(CalculateMessageSynchronizate message) {
+        // TODO
+        fundCalculateResults.get(message.getCalculateResult().getFundId());
+    }
+
+    @Override
+    public void handleResultMessage() {
+
     }
 
 

@@ -25,7 +25,9 @@ spring:
         queryCalculate:
           destination: queryCalculate-channel
           contentType: application/json
-
+        result:
+          destination: result-channel
+          contentType: application/json
 
 server:
   port: 9010

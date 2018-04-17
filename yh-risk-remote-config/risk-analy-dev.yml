@@ -153,6 +153,9 @@ spring:
         queryCalculate:
           destination: queryCalculate-channel
           contentType: application/json
+        result:
+          destination: result-channel
+          contentType: application/json
     loadbalancer:
       retry:
         #重试机制开启
