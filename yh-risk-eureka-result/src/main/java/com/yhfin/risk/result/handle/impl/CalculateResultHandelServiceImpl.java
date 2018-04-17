@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.CallableStatementCreator;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +46,7 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
      */
     private final String RISK_RESULT = "RISKRESULT_STATIC_MID_RESULT";
 
+    private Connection connection;
 
     private ExecutorService executorService = new ThreadPoolExecutor(3, 500, 0L, TimeUnit.MICROSECONDS,
             new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
@@ -55,6 +56,13 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
 
     @Autowired
     private IMessageService messageService;
+
+    @Value("${yhfin.data.risk.url}")
+    private String url;
+    @Value("${yhfin.data.risk.username}")
+    private String username;
+    @Value("${yhfin.data.risk.password}")
+    private String password;
 
     /**
      * 接收计算结果基本信息
@@ -94,7 +102,23 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
         if (!StringUtils.equals(currentSerialNumber, serialNumber)) {
             riskDao.jdbcOperatons().update("TRUNCATE TABLE " + RISK_RESULT_BASE);
             riskDao.jdbcOperatons().update("TRUNCATE TABLE " + RISK_RESULT);
+            initConnection();
             this.currentSerialNumber = serialNumber;
+        }
+    }
+
+
+    private void initConnection() {
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+            Class.forName("oracle.jdbc.OracleDriver");
+            this.connection = DriverManager.getConnection(url, username, password);
+        } catch (SQLException | ClassNotFoundException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("获取连接失败," + e, e);
+            }
         }
     }
 
@@ -145,149 +169,135 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
 
 
     private void forAllCalculateResultInfo(List<EntryCalculateResult> calculateResults) {
-        String callSql = "{ call FORALL_RISK_STATIC_MID_BASE (?,?,?) }";
+        CallableStatement cstmt = null;
         try {
-
-            Integer resultCode = (Integer) riskDao.jdbcOperatons().execute(callStateMentResultInfo(callSql, calculateResults),
-                    new CallableStatementCallback() {
-                        @Override
-                        public Integer doInCallableStatement(CallableStatement cs)
-                                throws SQLException, DataAccessException {
-                            cs.execute();
-                            int returnCode = cs.getInt(2);
-                            String message = cs.getString(3);
-                            if (StringUtils.isNotBlank(message)) {
-                                if (logger.isErrorEnabled()) {
-                                    logger.error("批量插入计算结果基本信息失败，" + message);
-                                }
-                            }
-                            return returnCode;
-                        }
-                    });
+            StructDescriptor recDesc = StructDescriptor.createDescriptor("RISK_STATIC_MID_RESULT_OBJ", this.connection);
+            ArrayList<STRUCT> pstruct = new ArrayList<STRUCT>();
+            for (EntryCalculateResult result : calculateResults) {
+                Object[] objs = new Object[6];
+                objs[0] = result.getResultKey();
+                objs[1] = result.getThresholdValue();
+                objs[2] = result.getCalculateResult();
+                objs[3] = result.getMoleculeResult();
+                objs[4] = result.getDenominatorResult();
+                objs[5] = result.getThresholdType().getTypeCode();
+                STRUCT struct = new STRUCT(recDesc, this.connection, objs);
+                pstruct.add(struct);
+            }
+            ArrayDescriptor tabDesc = ArrayDescriptor.createDescriptor("STATIC_MID_RESULT_ARRAY", this.connection);
+            ARRAY vArray = new ARRAY(tabDesc, this.connection, pstruct.toArray());
+            cstmt = this.connection.prepareCall("call FORALL_RISK_STATIC_MID_RESULT(?,?,?)");
+            cstmt.setArray(1, vArray);
+            cstmt.registerOutParameter(2, Types.INTEGER);
+            cstmt.registerOutParameter(3, Types.VARCHAR);
+            cstmt.execute();
+            Integer resultCode = cstmt.getInt(2);
             if (resultCode == 0) {
-                if (logger.isErrorEnabled()) {
-                    logger.error("批量插入计算结果基本信息失败");
+                String message = cstmt.getString(3);
+                if (StringUtils.isNotBlank(message)) {
+                    if (logger.isErrorEnabled()) {
+                        logger.error("批量插入计算结果基本最终信息失败，" + message);
+                    }
                 }
                 CompletableFuture.runAsync(() -> {
                     sendCalculateResultInfos(calculateResults, false);
                 }, executorService);
                 return;
             }
+            if (logger.isInfoEnabled()) {
+                logger.info("批量插入{}条计算结果最终信息成功", calculateResults.size());
+            }
             CompletableFuture.runAsync(() -> {
                 sendCalculateResultInfos(calculateResults, true);
             }, executorService);
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (logger.isErrorEnabled()) {
-                logger.error("批量插入计算结果信息失败，" + e, e);
+                logger.error("批量插入计算结果最终信息失败，" + e, e);
             }
             CompletableFuture.runAsync(() -> {
                 sendCalculateResultInfos(calculateResults, false);
             }, executorService);
+        } finally {
+            try {
+                if (cstmt != null) {
+                    cstmt.close();
+                }
+            } catch (SQLException e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error("关闭CallableStatement失败，" + e);
+                }
+            }
         }
     }
 
 
     private void forAllCalculateBaseInfo(List<EntryCalculateBaseInfo> calculateBaseInfos) {
-        String callSql = "{ call FORALL_RISK_STATIC_MID_RESULT (?,?,?) }";
+        CallableStatement cstmt = null;
         try {
-            Integer resultCode = (Integer) riskDao.jdbcOperatons().execute(callStateMentBaseInfo(callSql, calculateBaseInfos),
-                    new CallableStatementCallback() {
-                        @Override
-                        public Integer doInCallableStatement(CallableStatement cs)
-                                throws SQLException, DataAccessException {
-                            cs.execute();
-                            int returnCode = cs.getInt(2);
-                            String message = cs.getString(3);
-                            if (StringUtils.isNotBlank(message)) {
-                                if (logger.isErrorEnabled()) {
-                                    logger.error("批量插入计算结果基本信息失败，" + message);
-                                }
-                            }
-                            return returnCode;
-                        }
-                    });
+
+            StructDescriptor recDesc = StructDescriptor.createDescriptor("RISKRESULT_STATIC_MID_BASE_OBJ", this.connection);
+            ArrayList<STRUCT> pstruct = new ArrayList<STRUCT>();
+            for (EntryCalculateBaseInfo baseInfo : calculateBaseInfos) {
+                Object[] objs = new Object[10];
+                objs[0] = baseInfo.getResultId();
+                objs[1] = baseInfo.getRiskId();
+                objs[2] = baseInfo.getRiskDescription();
+                objs[3] = baseInfo.getCalculateDate();
+                objs[4] = baseInfo.getCalculateTime();
+                objs[5] = baseInfo.getDeclareType();
+                objs[6] = baseInfo.getResultUnit();
+                objs[7] = baseInfo.getCmpareBs();
+                objs[8] = baseInfo.getFundId();
+                objs[9] = baseInfo.getVcStockCode();
+                STRUCT struct = new STRUCT(recDesc, this.connection, objs);
+                pstruct.add(struct);
+            }
+            ArrayDescriptor tabDesc = ArrayDescriptor.createDescriptor("STATIC_MID_BASE_ARRAY", this.connection);
+            ARRAY vArray = new ARRAY(tabDesc, this.connection, pstruct.toArray());
+            cstmt = this.connection.prepareCall("call FORALL_RISK_STATIC_MID_BASE(?,?,?)");
+            cstmt.setArray(1, vArray);
+            cstmt.registerOutParameter(2, Types.INTEGER);
+            cstmt.registerOutParameter(3, Types.VARCHAR);
+            cstmt.execute();
+            Integer resultCode = cstmt.getInt(2);
             if (resultCode == 0) {
-                if (logger.isErrorEnabled()) {
-                    logger.error("批量插入计算结果基本信息失败");
+                String message = cstmt.getString(3);
+                if (StringUtils.isNotBlank(message)) {
+                    if (logger.isErrorEnabled()) {
+                        logger.error("批量插入计算结果基本信息失败，" + message);
+                    }
                 }
                 CompletableFuture.runAsync(() -> {
                     sendCalculateBaseInfos(calculateBaseInfos, false);
                 }, executorService);
                 return;
             }
+            if (logger.isInfoEnabled()) {
+                logger.info("批量插入{}条计算结果基本信息成功", calculateBaseInfos.size());
+            }
             CompletableFuture.runAsync(() -> {
                 sendCalculateBaseInfos(calculateBaseInfos, true);
             }, executorService);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("批量插入计算结果基本信息失败，" + e, e);
             }
             CompletableFuture.runAsync(() -> {
                 sendCalculateBaseInfos(calculateBaseInfos, false);
             }, executorService);
+        } finally {
+            try {
+                if (cstmt != null) {
+                    cstmt.close();
+                }
+            } catch (SQLException e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error("关闭CallableStatement失败，" + e);
+                }
+            }
         }
     }
 
-
-    private CallableStatementCreator callStateMentBaseInfo(String callSql, List<EntryCalculateBaseInfo> calculateBaseInfos) throws SQLException {
-        return new CallableStatementCreator() {
-            @Override
-            public CallableStatement createCallableStatement(Connection conn) throws SQLException {
-                CallableStatement cstmt = conn.prepareCall(callSql);
-                StructDescriptor recDesc = StructDescriptor.createDescriptor("RISKRESULT_STATIC_MID_BASE_OBJ", conn);
-                ArrayList<STRUCT> pstruct = new ArrayList<STRUCT>();
-                for (EntryCalculateBaseInfo baseInfo : calculateBaseInfos) {
-                    Object[] objs = new Object[10];
-                    objs[0] = baseInfo.getResultId();
-                    objs[1] = baseInfo.getRiskId();
-                    objs[2] = baseInfo.getRiskDescription();
-                    objs[3] = baseInfo.getCalculateDate();
-                    objs[4] = baseInfo.getCalculateTime();
-                    objs[5] = baseInfo.getDeclareType();
-                    objs[6] = baseInfo.getResultUnit();
-                    objs[7] = baseInfo.getCmpareBs();
-                    objs[8] = baseInfo.getFundId();
-                    objs[9] = baseInfo.getVcStockCode();
-                    STRUCT struct = new STRUCT(recDesc, conn, objs);
-                    pstruct.add(struct);
-                }
-                ArrayDescriptor tabDesc = ArrayDescriptor.createDescriptor("STATIC_MID_BASE_ARRAY", conn);
-                ARRAY vArray = new ARRAY(tabDesc, conn, pstruct.toArray());
-                cstmt.setArray(1, vArray);
-                cstmt.registerOutParameter(2, Types.INTEGER);
-                cstmt.registerOutParameter(3, Types.VARCHAR);
-                return cstmt;
-            }
-        };
-    }
-
-    private CallableStatementCreator callStateMentResultInfo(String callSql, List<EntryCalculateResult> calculateResults) throws SQLException {
-        return new CallableStatementCreator() {
-            @Override
-            public CallableStatement createCallableStatement(Connection conn) throws SQLException {
-                CallableStatement cstmt = conn.prepareCall(callSql);
-                StructDescriptor recDesc = StructDescriptor.createDescriptor("RISK_STATIC_MID_RESULT_OBJ", conn);
-                ArrayList<STRUCT> pstruct = new ArrayList<STRUCT>();
-                for (EntryCalculateResult result : calculateResults) {
-                    Object[] objs = new Object[6];
-                    objs[0] = result.getResultKey();
-                    objs[1] = result.getThresholdValue();//TODO
-                    objs[2] = result.getCalculateResult();
-                    objs[3] = result.getMoleculeResult();
-                    objs[4] = result.getDenominatorResult();
-                    objs[5] = result.getThresholdType().getTypeCode();
-                    STRUCT struct = new STRUCT(recDesc, conn, objs);
-                    pstruct.add(struct);
-                }
-                ArrayDescriptor tabDesc = ArrayDescriptor.createDescriptor("STATIC_MID_RESULT_ARRAY", conn);
-                ARRAY vArray = new ARRAY(tabDesc, conn, pstruct.toArray());
-                cstmt.setArray(1, vArray);
-                cstmt.registerOutParameter(2, Types.INTEGER);
-                cstmt.registerOutParameter(3, Types.VARCHAR);
-                return cstmt;
-            }
-        };
-    }
 
 }

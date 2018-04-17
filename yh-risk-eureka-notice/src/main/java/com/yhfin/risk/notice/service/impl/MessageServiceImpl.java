@@ -100,7 +100,7 @@ public class MessageServiceImpl implements IMessageService {
      *
      * @param message
      */
-    @StreamListener("entry")
+    @StreamListener("analy")
     @Override
     public void messageAnaly(AnalyMessageSynchronizate message) {
         if (logger.isInfoEnabled()) {
@@ -121,6 +121,20 @@ public class MessageServiceImpl implements IMessageService {
             logger.info(StringUtil.commonLogStart() + "收到消息服务器，计算基金结果消息,{}", message.getSerialNumber(), message.getRequestId(), JSON.toJSONString(message));
         }
 
+
+    }
+
+    /**
+     * 基金结果处理消息
+     *
+     * @param message
+     */
+    @StreamListener("result")
+    @Override
+    public void messageResult(ResultMessageSynchronizate message) {
+        if (logger.isInfoEnabled()) {
+            logger.info(StringUtil.commonLogStart() + "收到消息服务器，计算基金结果处理消息,{}", message.getSerialNumber(), message.getRequestId(), JSON.toJSONString(message));
+        }
 
     }
 

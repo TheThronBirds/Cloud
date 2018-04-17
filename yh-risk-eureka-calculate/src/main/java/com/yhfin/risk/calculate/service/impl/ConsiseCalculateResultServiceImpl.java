@@ -81,7 +81,6 @@ public class ConsiseCalculateResultServiceImpl implements IConsiseCalculateResul
             logger.error(StringUtil.commonLogStart() + "合并发起条目计算结果信息,处理发生错误", conciseCalculateResults.get(0).getSerialNumber(), conciseCalculateResults.get(0).getRequestId());
             logger.error("" + e, e);
         }
-        //TODO 发送计算结果消息给通知服务器 ??
         return conciseCalculateResults.parallelStream().map((item) -> ServerResponse.createByError(item.getRequestId(), item.getSerialNumber(), Const.exceptionErrorCode.CALCULATE_ERROR_CODE, e.getMessage(), "")).collect(Collectors.toList());
     }
 

@@ -57,6 +57,7 @@ public class EntryConsiseCalculateServiceImpl implements IEntryConsiseCalculateS
         EntryCalculateResult result = new EntryCalculateResult(conciseCalculateInfo.getResultKey());
         result.setSerialNumber(conciseCalculateInfo.getSerialNumber());
         result.setRequestId(conciseCalculateInfo.getRequestId());
+        result.setFundId(conciseCalculateInfo.getFundId());
         result.setCalculateDetailResult("计算出错:" + e.getMessage());
         result.setCalculateValid(false);
         CompletableFuture.runAsync(() -> {

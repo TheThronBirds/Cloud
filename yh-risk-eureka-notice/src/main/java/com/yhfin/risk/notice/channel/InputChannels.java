@@ -15,4 +15,7 @@ public interface InputChannels {
 	
 	@Input("calculate")
 	SubscribableChannel calculate();
+
+	@Input("result")
+	SubscribableChannel entry();
 }

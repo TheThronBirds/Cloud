@@ -38,7 +38,7 @@ public class CalculateResultController {
     @RequestMapping(value = "/consiseCalculateBaseInfos",method = RequestMethod.POST)
     public List<ServerResponse<String>> consiseCalculateBaseInfos(@RequestBody List<EntryCalculateBaseInfo> calculateBaseInfos) {
         if (logger.isInfoEnabled()) {
-            logger.info(StringUtil.commonLogStart() + "接收到{}条计算结果基本信息" + calculateBaseInfos.get(0).getSerialNumber(), calculateBaseInfos.get(0).getRequestId(), calculateBaseInfos.size());
+            logger.info(StringUtil.commonLogStart() + "接收到{}条计算结果基本信息" , calculateBaseInfos.get(0).getSerialNumber(), calculateBaseInfos.get(0).getRequestId(), calculateBaseInfos.size());
         }
         CompletableFuture.runAsync(() -> {
             resulteHandelService.acceptCalculateResultBaseInfo(calculateBaseInfos);
@@ -49,7 +49,7 @@ public class CalculateResultController {
     @RequestMapping(value = "/consiseCalculateResultInfos",method = RequestMethod.POST)
     public List<ServerResponse<String>> consiseCalculateResultInfos(@RequestBody List<EntryCalculateResult> calculateResults) {
         if (logger.isInfoEnabled()) {
-            logger.info(StringUtil.commonLogStart() + "接收到{}条计算结果基本信息" + calculateResults.get(0).getSerialNumber(), calculateResults.get(0).getRequestId(), calculateResults.size());
+            logger.info(StringUtil.commonLogStart() + "接收到{}条计算结果最终信息" , calculateResults.get(0).getSerialNumber(), calculateResults.get(0).getRequestId(), calculateResults.size());
         }
         CompletableFuture.runAsync(() -> {
             resulteHandelService.acceptCalculateResultInfo(calculateResults);
