@@ -68,7 +68,7 @@ public class ConsiseCalculateResultServiceImpl implements IConsiseCalculateResul
                         result.getErrorCalculate().incrementAndGet();
                     }
                 }
-                restTemplate.postForObject("http://RISK-BUS/yhfin/bus/calculateMessageSynchronizate", message, ServerResponse.class);
+                messageService.calculateMessageSynchronizate(message);
             }
         }, executorService);
 

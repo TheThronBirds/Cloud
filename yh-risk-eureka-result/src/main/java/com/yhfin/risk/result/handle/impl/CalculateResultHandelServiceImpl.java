@@ -2,9 +2,12 @@ package com.yhfin.risk.result.handle.impl;
 
 import com.yhfin.risk.common.pojos.analy.EntryCalculateBaseInfo;
 import com.yhfin.risk.common.pojos.calculate.EntryCalculateResult;
+import com.yhfin.risk.common.requests.message.ResultMessageSynchronizate;
+import com.yhfin.risk.common.responses.result.ResultHandleResult;
 import com.yhfin.risk.common.utils.StringUtil;
 import com.yhfin.risk.core.dao.IRiskDao;
 import com.yhfin.risk.result.handle.ICalculateResultHandelService;
+import com.yhfin.risk.result.message.IMessageService;
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
 import oracle.sql.STRUCT;
@@ -21,9 +24,14 @@ import org.springframework.stereotype.Service;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class CalculateResultHandelServiceImpl implements ICalculateResultHandelService {
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     /**
      * 当前流水号
@@ -38,8 +46,15 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
      */
     private final String RISK_RESULT = "RISKRESULT_STATIC_MID_RESULT";
 
+
+    private ExecutorService executorService = new ThreadPoolExecutor(3, 500, 0L, TimeUnit.MICROSECONDS,
+            new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
+
     @Autowired
     private IRiskDao riskDao;
+
+    @Autowired
+    private IMessageService messageService;
 
     /**
      * 接收计算结果基本信息
@@ -77,15 +92,62 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
      */
     private synchronized void checkTruncateTableData(String serialNumber) {
         if (!StringUtils.equals(currentSerialNumber, serialNumber)) {
-            riskDao.jdbcOperatons().update("TRUNCATE TABLE RISKRESULT_MID_BASE");
-            riskDao.jdbcOperatons().update("TRUNCATE TABLE RISKRESULT_MID_RESULT");
+            riskDao.jdbcOperatons().update("TRUNCATE TABLE " + RISK_RESULT_BASE);
+            riskDao.jdbcOperatons().update("TRUNCATE TABLE " + RISK_RESULT);
             this.currentSerialNumber = serialNumber;
         }
     }
 
+    private void sendCalculateBaseInfos(List<EntryCalculateBaseInfo> calculateBaseInfos, boolean valid) {
+        Map<String, List<EntryCalculateBaseInfo>> messageOrigin = calculateBaseInfos.stream().parallel().collect(Collectors.groupingBy(EntryCalculateBaseInfo::getFundId));
+        for (Map.Entry<String, List<EntryCalculateBaseInfo>> entry : messageOrigin.entrySet()) {
+            ResultMessageSynchronizate message = new ResultMessageSynchronizate();
+            List<EntryCalculateBaseInfo> baseInfos = entry.getValue();
+            String requestId = baseInfos.get(0).getRequestId();
+            String serialNumber = baseInfos.get(0).getSerialNumber();
+            ResultHandleResult result = new ResultHandleResult();
+            message.setHandleResult(result);
+            message.setRequestId(requestId);
+            message.setSerialNumber(serialNumber);
+            result.setRequestId(requestId);
+            result.setSerialNumber(serialNumber);
+            result.setFundId(entry.getKey());
+            if (valid) {
+                result.getSuccessBase().addAndGet(baseInfos.size());
+            } else {
+                result.getErrorBase().addAndGet(baseInfos.size());
+            }
+            messageService.resultMessageSynchronizate(message);
+        }
+
+    }
+
+    private void sendCalculateResultInfos(List<EntryCalculateResult> calculateResults, boolean valid) {
+        Map<String, List<EntryCalculateResult>> messageOrigin = calculateResults.stream().parallel().collect(Collectors.groupingBy(EntryCalculateResult::getFundId));
+        for (Map.Entry<String, List<EntryCalculateResult>> entry : messageOrigin.entrySet()) {
+            ResultMessageSynchronizate message = new ResultMessageSynchronizate();
+            List<EntryCalculateResult> resultInfos = entry.getValue();
+            String requestId = resultInfos.get(0).getRequestId();
+            String serialNumber = resultInfos.get(0).getSerialNumber();
+            ResultHandleResult result = new ResultHandleResult();
+            message.setHandleResult(result);
+            result.setRequestId(requestId);
+            result.setSerialNumber(serialNumber);
+            result.setFundId(entry.getKey());
+            if (valid) {
+                result.getSuccessResult().addAndGet(resultInfos.size());
+            } else {
+                result.getErrorResult().addAndGet(resultInfos.size());
+            }
+            messageService.resultMessageSynchronizate(message);
+        }
+    }
+
+
     private void forAllCalculateResultInfo(List<EntryCalculateResult> calculateResults) {
         String callSql = "{ call FORALL_RISK_STATIC_MID_BASE (?,?,?) }";
         try {
+
             Integer resultCode = (Integer) riskDao.jdbcOperatons().execute(callStateMentResultInfo(callSql, calculateResults),
                     new CallableStatementCallback() {
                         @Override
@@ -103,18 +165,28 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
                         }
                     });
             if (resultCode == 0) {
-                //TODO 发送计算结果处理消息给通知服务器
                 if (logger.isErrorEnabled()) {
                     logger.error("批量插入计算结果基本信息失败");
                 }
+                CompletableFuture.runAsync(() -> {
+                    sendCalculateResultInfos(calculateResults, false);
+                }, executorService);
+                return;
             }
-            //TODO 发送计算结果处理消息给通知服务器
+            CompletableFuture.runAsync(() -> {
+                sendCalculateResultInfos(calculateResults, true);
+            }, executorService);
+
         } catch (SQLException e) {
             if (logger.isErrorEnabled()) {
                 logger.error("批量插入计算结果信息失败，" + e, e);
             }
+            CompletableFuture.runAsync(() -> {
+                sendCalculateResultInfos(calculateResults, false);
+            }, executorService);
         }
     }
+
 
     private void forAllCalculateBaseInfo(List<EntryCalculateBaseInfo> calculateBaseInfos) {
         String callSql = "{ call FORALL_RISK_STATIC_MID_RESULT (?,?,?) }";
@@ -136,18 +208,27 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
                         }
                     });
             if (resultCode == 0) {
-                //TODO 发送计算结果处理消息给通知服务器
                 if (logger.isErrorEnabled()) {
                     logger.error("批量插入计算结果基本信息失败");
                 }
+                CompletableFuture.runAsync(() -> {
+                    sendCalculateBaseInfos(calculateBaseInfos, false);
+                }, executorService);
+                return;
             }
-            //TODO 发送计算结果处理消息给通知服务器
+            CompletableFuture.runAsync(() -> {
+                sendCalculateBaseInfos(calculateBaseInfos, true);
+            }, executorService);
         } catch (SQLException e) {
             if (logger.isErrorEnabled()) {
                 logger.error("批量插入计算结果基本信息失败，" + e, e);
             }
+            CompletableFuture.runAsync(() -> {
+                sendCalculateBaseInfos(calculateBaseInfos, false);
+            }, executorService);
         }
     }
+
 
     private CallableStatementCreator callStateMentBaseInfo(String callSql, List<EntryCalculateBaseInfo> calculateBaseInfos) throws SQLException {
         return new CallableStatementCreator() {

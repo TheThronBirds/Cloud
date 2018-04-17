@@ -34,8 +34,6 @@ public class ConciseCalculateAspect {
     private ExecutorService executorService = new ThreadPoolExecutor(3, 50, 0L, TimeUnit.MICROSECONDS,
             new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
 
-
-
     /**
      * 内存同步在redis中存储的消息，hashkey值
      */
