@@ -38,6 +38,7 @@ public class EntryConsiseCalculateServiceImpl implements IEntryConsiseCalculateS
             logger.info(StringUtil.commonLogStart() + "接收到计算请求，{}" + conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getRequestId(), JSON.toJSONString(conciseCalculateInfo));
         }
         EntryCalculateResult result = calculateService.calculateRequest(conciseCalculateInfo, conciseCalculateInfo.getFundId());
+        result.setCalculateValid(true);
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "接收到计算请求，计算唯一标识{},计算结果:{}" + conciseCalculateInfo.getSerialNumber(), conciseCalculateInfo.getRequestId(), conciseCalculateInfo.getResultKey(), JSON.toJSONString(result));
         }
@@ -57,6 +58,7 @@ public class EntryConsiseCalculateServiceImpl implements IEntryConsiseCalculateS
         result.setSerialNumber(conciseCalculateInfo.getSerialNumber());
         result.setRequestId(conciseCalculateInfo.getRequestId());
         result.setCalculateDetailResult("计算出错:" + e.getMessage());
+        result.setCalculateValid(false);
         CompletableFuture.runAsync(() -> {
             resultService.consiseCalculateResult(result);
         }, executorService);

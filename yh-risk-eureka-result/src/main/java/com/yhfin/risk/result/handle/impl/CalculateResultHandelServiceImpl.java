@@ -24,13 +24,11 @@ import java.util.List;
 
 @Service
 public class CalculateResultHandelServiceImpl implements ICalculateResultHandelService {
-
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     /**
      * 当前流水号
      */
     private String currentSerialNumber;
-
     /**
      * 条目计算结果基本信息
      */
@@ -53,11 +51,9 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "对接收到{}条计算结果基本信息进行处理", calculateBaseInfos.get(0).getSerialNumber(), calculateBaseInfos.get(0).getRequestId(), calculateBaseInfos.size());
         }
-        //TODO  根据当前流水号查看是否需要删除数据  批量处理 条目结果基本信息
         checkTruncateTableData(calculateBaseInfos.get(0).getSerialNumber());
         forAllCalculateBaseInfo(calculateBaseInfos);
     }
-
 
     /**
      * 接收计算结果最终结果信息
@@ -69,7 +65,6 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
         if (logger.isInfoEnabled()) {
             logger.info(StringUtil.commonLogStart() + "对接收到{}条计算结果基本信息进行处理", calculateResults.get(0).getSerialNumber(), calculateResults.get(0).getRequestId(), calculateResults.size());
         }
-        //TODO  根据当前流水号查看是否需要删除数据  批量处理  条目计算结果
         checkTruncateTableData(calculateResults.get(0).getSerialNumber());
         forAllCalculateResultInfo(calculateResults);
     }
@@ -108,11 +103,12 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
                         }
                     });
             if (resultCode == 0) {
-                //TODO 告知通知中心  ???
+                //TODO 发送计算结果处理消息给通知服务器
                 if (logger.isErrorEnabled()) {
                     logger.error("批量插入计算结果基本信息失败");
                 }
             }
+            //TODO 发送计算结果处理消息给通知服务器
         } catch (SQLException e) {
             if (logger.isErrorEnabled()) {
                 logger.error("批量插入计算结果信息失败，" + e, e);
@@ -140,11 +136,12 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
                         }
                     });
             if (resultCode == 0) {
-                //TODO 告知通知中心  ???
+                //TODO 发送计算结果处理消息给通知服务器
                 if (logger.isErrorEnabled()) {
                     logger.error("批量插入计算结果基本信息失败");
                 }
             }
+            //TODO 发送计算结果处理消息给通知服务器
         } catch (SQLException e) {
             if (logger.isErrorEnabled()) {
                 logger.error("批量插入计算结果基本信息失败，" + e, e);

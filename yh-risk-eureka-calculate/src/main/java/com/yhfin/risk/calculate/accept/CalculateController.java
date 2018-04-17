@@ -1,13 +1,9 @@
 package com.yhfin.risk.calculate.accept;
 
-import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.calculate.service.IEntryConsiseCalculateService;
-import com.yhfin.risk.common.consts.Const;
-import com.yhfin.risk.common.pojos.calculate.EntryCalculateResult;
 import com.yhfin.risk.common.pojos.calculate.EntryConciseCalculateInfo;
 import com.yhfin.risk.common.responses.ServerResponse;
 import com.yhfin.risk.common.utils.StringUtil;
-import com.yhfin.risk.core.calculate.reduce.IInstructionRequestCalculateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.spring.web.json.Json;
 
 import java.util.List;
 import java.util.concurrent.*;
