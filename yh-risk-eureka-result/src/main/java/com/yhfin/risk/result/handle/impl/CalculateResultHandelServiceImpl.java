@@ -155,6 +155,8 @@ public class CalculateResultHandelServiceImpl implements ICalculateResultHandelS
             String serialNumber = resultInfos.get(0).getSerialNumber();
             ResultHandleResult result = new ResultHandleResult();
             message.setHandleResult(result);
+            message.setRequestId(requestId);
+            message.setSerialNumber(serialNumber);
             result.setRequestId(requestId);
             result.setSerialNumber(serialNumber);
             result.setFundId(entry.getKey());
