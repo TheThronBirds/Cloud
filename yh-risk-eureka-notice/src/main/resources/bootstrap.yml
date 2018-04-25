@@ -1,0 +1,27 @@
+eureka:
+    instance:
+      hostname: localhost
+    client:
+      service-url:
+        defaultZone: http://${eureka.instance.hostname}:9000/eureka/
+
+spring:
+  application:
+    name: risk-notice
+  cloud:
+    config:
+      retry:
+        multiplier: 1000 #默认重试1000毫秒
+        initial-interval: 1  #下一间隔时间乘数
+        max-interval: 3000  #最大间隔时间 默认2000
+        max-attempts: 6 #最大重试次数 默认6次
+      fail-fast: true
+      profile: dev
+      label: eureka
+      discovery:
+        service-id: RISK-CONFIG
+        enabled: true
+      
+
+
+
