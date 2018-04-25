@@ -1,0 +1,31 @@
+server:
+  port: 9002                    #应用运行端口
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:9000/eureka/
+
+spring:
+  rabbitmq:
+    host: 192.168.100.100
+    prot: 5672
+    username: admin
+    password: 415ilyILY
+  cloud:
+    config:
+      label: eureka
+      server:
+        git: #配置git仓库地址
+          basedir: D:/workplace/idea/yh-risk-eureka-parent
+          uri: http://gitlab.yhfin.club:81/risk/risk-engine.git
+          search-paths: yh-risk-remote-config
+          username: caohui
+          password: 415ilyILY
+          force-pull: false
+
+
+
+            

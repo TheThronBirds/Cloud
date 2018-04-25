@@ -4,25 +4,25 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.yhfin.risk</groupId>
-    <artifactId>yh-risk-eureka-parent</artifactId>
+    <artifactId>yh-risk-cloud-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
         <!-- 微服务 配置中心 -->
-        <module>yh-risk-eureka-config</module>
+        <module>yh-risk-cloud-config</module>
         <!-- 微服务 网关 -->
-        <module>yh-risk-eureka-gateway</module>
+        <module>yh-risk-cloud-gateway</module>
         <!-- 微服务 分析服务器 -->
-        <module>yh-risk-eureka-analy</module>
+        <module>yh-risk-cloud-analy</module>
         <!-- 微服务 计算服务器 -->
-        <module>yh-risk-eureka-calculate</module>
+        <module>yh-risk-cloud-calculate</module>
         <!-- 微服务 消息服务器 -->
-        <module>yh-risk-eureka-bus</module>
+        <module>yh-risk-cloud-bus</module>
         <!-- 微服务 结果处理服务器 -->
-        <module>yh-risk-eureka-result</module>
+        <module>yh-risk-cloud-result</module>
         <!-- 微服务 通知服务器 -->
-        <module>yh-risk-eureka-notice</module>
+        <module>yh-risk-cloud-notice</module>
         <!-- 微服务 注册服务器 -->
-        <module>yh-risk-eureka-register</module>
+        <module>yh-risk-cloud-register</module>
     </modules>
     <packaging>pom</packaging>
 
