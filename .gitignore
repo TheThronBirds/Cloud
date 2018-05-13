@@ -1,0 +1,31 @@
+log/
+target/
+!.mvn/wrapper/maven-wrapper.jar
+yh-risk-cloud-gateway/
+yh-risk-cloud-register/
+yh-risk-remote-config/
+yh-risk-cloud-config/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.mvn
+mvnw
+mvnw.cmd
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
