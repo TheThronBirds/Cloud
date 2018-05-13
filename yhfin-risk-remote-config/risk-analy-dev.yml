@@ -1,7 +1,6 @@
 yhfin:
-  web:
-    #是否开启swagger配置
-    swagger: true
+  common:
+    config: risk,memory,swagger
   data:
     #数据源实例注入 配置
     config: risk,redis,memory

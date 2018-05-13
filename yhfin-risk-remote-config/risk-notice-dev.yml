@@ -1,10 +1,7 @@
 yhfin:
-  web:
-    #是否开启swagger配置
-    swagger: true
-  data:
-    #数据源实例注入 配置
-    config: risk,redis
+  common:
+    config: risk,swagger
+  data: 
     #内存数据库配置
     memory:
       #通过kettle同步内存数据配置

@@ -20,7 +20,7 @@ spring:
         max-attempts: 6 #最大重试次数 默认6次
       fail-fast: true
       profile: dev
-      label: eureka
+      label: dev
       discovery:
         service-id: RISK-CONFIG
         enabled: true
