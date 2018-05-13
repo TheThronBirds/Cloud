@@ -14,6 +14,7 @@ package com.yhfin.risk.cloud.notice.controller.feign;
 
 import com.alibaba.fastjson.JSON;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.yhfin.risk.cloud.notice.service.feign.ISendMessageService;
 import com.yhfin.risk.cloud.notice.service.feign.ISendStaticSingleFundtCalculateService;
 import com.yhfin.risk.core.common.consts.Const;
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateDTO;
@@ -48,7 +49,6 @@ public class StaticCalculateController {
 
     @Autowired
     private ISendStaticSingleFundtCalculateService sendStaticSingleFundtCalculateService;
-
     /**
      * 接收静态请求，根据基金轮训发送到分析服务器
      *

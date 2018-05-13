@@ -86,10 +86,10 @@ server:
 
   #消息中间件rabbitmq配置
   rabbitmq:
-    host: 192.168.100.100
+    host: 192.168.74.226
     prot: 5672
-    username: admin
-    password: 415ilyILY
+    username: yhfin
+    password: yhfin
   cloud:
     stream:
       bindings:
@@ -129,3 +129,6 @@ server:
         - 192.168.100.100:7004
         - 192.168.100.100:7005
         - 192.168.100.100:7006
+feign:
+  hystrix:
+    enabled: true

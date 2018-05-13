@@ -129,5 +129,7 @@ spring:
        #h2数据库是否可以允许所有ip端web端查看
         web-allow-others: true
 
-
+feign:
+  hystrix:
+    enabled: true
 
