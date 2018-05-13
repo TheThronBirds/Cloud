@@ -1,0 +1,7 @@
+spring:
+  profiles:
+    active: dev           #设置环境
+  application:
+    name: risk-registry   #风控引擎服务注册中心
+
+
