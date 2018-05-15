@@ -23,6 +23,12 @@
             <groupId>com.yhfin.risk</groupId>
             <artifactId>yhfin-risk-core-dao</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.yhfin.risk</groupId>
+                    <artifactId>yhfin-risk-core-dao-config</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

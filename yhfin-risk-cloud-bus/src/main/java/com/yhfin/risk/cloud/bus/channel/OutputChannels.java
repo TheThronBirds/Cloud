@@ -80,5 +80,13 @@ public interface OutputChannels {
      */
     @Output("result")
     MessageChannel result();
+    
+    /**
+     * 发布计算信息
+     *
+     * @return
+     */
+    @Output("notice")
+    MessageChannel notice();
 
 }

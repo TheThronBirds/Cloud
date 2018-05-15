@@ -12,6 +12,7 @@
  ********************************************************/
 package com.yhfin.risk.cloud.analy.service.local;
 
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 
@@ -47,4 +48,14 @@ public interface IReceiveMessageService {
      * @Date: 2018/5/11/15:44
      */
     void entrySynchronizateByMessage(EntryMessageSynchronizateDTO message);
+
+    /**
+     * 同步计算结果
+     * @Title updateStaticCalculateState
+     * @Description: 同步计算结果
+     * @param  staticCalculateNotice 消息
+     * @author: caohui
+     * @Date:  2018/5/14/2:42
+     */
+    void updateStaticCalculateState(StaticCalculateNoticeDTO staticCalculateNotice);
 }

@@ -14,6 +14,7 @@ package com.yhfin.risk.cloud.notice.service.feign;
 
 import com.yhfin.risk.core.common.consts.Const;
 import com.yhfin.risk.core.common.pojos.dtos.MessageResultDTO;
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
@@ -67,6 +68,13 @@ public class SendMessageServiceHystrix implements FallbackFactory<ISendMessageSe
             public ServerResponse<MessageResultDTO> memoryMessageSynchronizate(MemoryMessageSynchronizateDTO message) {
                 log.error("服务不存在或网络断开,错误原因:{}", cause.getMessage());
                 return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(), Const.ExceptionErrorCode.NOTICE_ERROR_CODE,"网络断开或处理超时，错误原因" + cause.getMessage(), null);
+            }
+
+            @Override
+            public ServerResponse staticCalculateMessageSynchronizate(StaticCalculateNoticeDTO message) {
+                log.error("服务不存在或网络断开,错误原因:{}", cause.getMessage());
+                return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(), Const.ExceptionErrorCode.NOTICE_ERROR_CODE,"网络断开或处理超时，错误原因" + cause.getMessage(), null);
+
             }
         };
     }

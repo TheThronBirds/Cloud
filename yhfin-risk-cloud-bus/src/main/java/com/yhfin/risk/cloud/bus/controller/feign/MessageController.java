@@ -17,6 +17,9 @@ import com.yhfin.risk.cloud.bus.service.message.IMessageService;
 import com.yhfin.risk.core.common.consts.Const;
 import com.yhfin.risk.core.common.pojos.dtos.AbstractMessageDTO;
 import com.yhfin.risk.core.common.pojos.dtos.MessageResultDTO;
+import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
+import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
@@ -31,85 +34,135 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 接收消息
- * 包名称：com.yhfin.risk.cloud.bus.controller.feign
- * 类名称：MessageController
- * 类描述：接收消息
- * 创建人：@author caohui
- * 创建时间：2018/5/13/14:39
+ * 接收消息 包名称：com.yhfin.risk.cloud.bus.controller.feign 类名称：MessageController
+ * 类描述：接收消息 创建人：@author caohui 创建时间：2018/5/13/14:39
  */
 @RestController
 @Slf4j
 @RequestMapping("/yhfin/cloud/bus")
 public class MessageController {
 
-    @Autowired
-    private IMessageService messageService;
+	@Autowired
+	private IMessageService messageService;
 
-    @RequestMapping(value = "/memoryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
-    public ServerResponse<MessageResultDTO> outputMessageMemory(@RequestBody MemoryMessageSynchronizateDTO message) {
-        return outMessage(message, ChannelTypeEnum.MEMORY);
-    }
+	@RequestMapping(value = "/memoryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
+	public ServerResponse<MessageResultDTO> outputMessageMemory(@RequestBody MemoryMessageSynchronizateDTO message) {
+		return outMessage(message, ChannelTypeEnum.MEMORY);
+	}
 
-    @RequestMapping(value = "/entryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
-    public ServerResponse<MessageResultDTO> outputMessageEntry(@RequestBody EntryMessageSynchronizateDTO message) {
-        return outMessage(message, ChannelTypeEnum.ENTRY);
-    }
+	@RequestMapping(value = "/entryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
+	public ServerResponse<MessageResultDTO> outputMessageEntry(@RequestBody EntryMessageSynchronizateDTO message) {
+		return outMessage(message, ChannelTypeEnum.ENTRY);
+	}
 
-    private ServerResponse<MessageResultDTO> outMessage(AbstractMessageDTO message, ChannelTypeEnum channelType) {
-        ServerResponse<MessageResultDTO> messageResult = checkMessage(message, channelType);
-        if (!messageResult.isSuccess()) {
-            return messageResult;
-        }
-        boolean sendValidFlag = messageService.sendMessage(message, message.getChannelType());
-        messageResult.getData().setSendSuccess(sendValidFlag);
-        if (log.isInfoEnabled()) {
-            String result = sendValidFlag ? "成功" : "失败";
-            log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",发布消息{},消息类型{},结果:" + result, JSON.toJSONString(message), message.getChannelType().getTypeDes());
-        }
-        return messageResult;
-    }
+	@RequestMapping(value = "/staticCalculateNotice", method = RequestMethod.POST, produces = "application/json")
+	ServerResponse<MessageResultDTO> staticCalculateMessageSynchronizate(
+			@RequestBody StaticCalculateNoticeDTO message) {
+		return outMessage(message, ChannelTypeEnum.NOTICE);
+	}
 
-    /**
-     * 校验消息
-     * @Title checkMessage 校验消息
-     * @Description: 校验消息
-     * @param  message 消息体
-     * @return 校验结果
-     * @throws
-     * @author: caohui
-     * @Date:  2018/5/13/15:07
-     */
-    private ServerResponse<MessageResultDTO> checkMessage(AbstractMessageDTO message, ChannelTypeEnum channelType) {
-        MessageResultDTO result = new MessageResultDTO();
-        result.setChannelType(channelType);
-        result.setRequestId(message.getRequestId());
-        result.setSendSuccess(false);
-        result.setSerialNumber(message.getSerialNumber());
-        if (message == null) {
-            return ServerResponse.createByError("", "", Const.ExceptionErrorCode.BUS_ERROR_CODE, "发布消息体为空",result);
-        }
+	/**
+	 * 发送分析结果信息
+	 *
+	 * @param message
+	 *            消息
+	 * @return
+	 * @Title entryMessageSynchronizate
+	 * @Description: 发送分析结果信息
+	 * @author: caohui
+	 * @Date: 2018/5/14/0:49
+	 */
+	@RequestMapping(value = "/analyMessage", method = RequestMethod.POST, produces = "application/json")
+	ServerResponse<MessageResultDTO> analyMessage(@RequestBody SingleFundAnalyResultDTO message) {
+		return outMessage(message, ChannelTypeEnum.ANALY);
+	}
 
-        if (StringUtils.isBlank(message.getRequestId()) || StringUtils.isBlank(message.getSerialNumber())) {
-            return ServerResponse.createByError("", "", Const.ExceptionErrorCode.BUS_ERROR_CODE, "请求序号为空或者流水号为空",result);
-        }
+	/**
+	 * 发送处理结果信息
+	 *
+	 * @param message
+	 *            消息
+	 * @return
+	 * @Title entryMessageSynchronizate
+	 * @Description: 发送处理结果信息
+	 * @author: caohui
+	 * @Date: 2018/5/14/0:49
+	 */
+	@RequestMapping(value = "/resultMessage", method = RequestMethod.POST, produces = "application/json")
+	ServerResponse<MessageResultDTO> resultMessage(@RequestBody ResultHandleResultDTO message) {
+		return outMessage(message, ChannelTypeEnum.RESULT);
+	}
 
-        if (message.getChannelType() == null) {
-            return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(),
-                    Const.ExceptionErrorCode.BUS_ERROR_CODE, "消息体类型为空",result);
-        }
+	private ServerResponse<MessageResultDTO> outMessage(AbstractMessageDTO message, ChannelTypeEnum channelType) {
+		ServerResponse<MessageResultDTO> messageResult = checkMessage(message, channelType);
+		if (!messageResult.isSuccess()) {
+			return messageResult;
+		}
+		boolean sendValidFlag = messageService.sendMessage(message, message.getChannelType());
+		messageResult.getData().setSendSuccess(sendValidFlag);
+		if (log.isInfoEnabled()) {
+			String result = sendValidFlag ? "成功" : "失败";
+			log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",发布消息{},消息类型{},结果:"
+					+ result, JSON.toJSONString(message), message.getChannelType().getTypeDes());
+		}
+		return messageResult;
+	}
 
-        if (message.getChannelType() != channelType) {
-            return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(),
-                    Const.ExceptionErrorCode.BUS_ERROR_CODE, "消息体类型接口错误,接口消息类型为"
-                            + message.getChannelType().getTypeDes() + ",发布消息的消息类型为" + channelType.getTypeDes());
-        }
-        if (log.isInfoEnabled()) {
-            log.info(StringUtil.commonLogStart(message.getSerialNumber(),
-                    message.getRequestId()) + ",请求发布消息{},消息类型{}", JSON.toJSONString(message), message.getChannelType().getTypeDes());
-        }
-        return ServerResponse.createBySuccess(message.getRequestId(), message.getSerialNumber(), result);
-    }
+	/**
+	 * 校验消息
+	 *
+	 * @param message
+	 *            消息体
+	 * @return 校验结果
+	 * @throws @Title
+	 *             checkMessage 校验消息
+	 * @Description: 校验消息
+	 * @author: caohui
+	 * @Date: 2018/5/13/15:07
+	 */
+	private ServerResponse<MessageResultDTO> checkMessage(AbstractMessageDTO message, ChannelTypeEnum channelType) {
+		MessageResultDTO result = new MessageResultDTO();
+		result.setChannelType(channelType);
+		result.setRequestId(message.getRequestId());
+		result.setSendSuccess(false);
+		result.setSerialNumber(message.getSerialNumber());
+		if (message == null) {
+			if (log.isErrorEnabled()) {
+				log.error(StringUtil.commonLogStart("", "") + ",发布消息体为空");
+			}
+			return ServerResponse.createByError("", "", Const.ExceptionErrorCode.BUS_ERROR_CODE, "发布消息体为空", result);
+		}
 
+		if (StringUtils.isBlank(message.getRequestId()) || StringUtils.isBlank(message.getSerialNumber())) {
+			if (log.isErrorEnabled()) {
+				log.error(StringUtil.commonLogStart("", "") + ",请求序号为空或者流水号为空");
+			}
+			return ServerResponse.createByError("", "", Const.ExceptionErrorCode.BUS_ERROR_CODE, "请求序号为空或者流水号为空",
+					result);
+		}
+
+		if (message.channelType() == null) {
+			if (log.isErrorEnabled()) {
+				log.error(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",消息体类型为空");
+			}
+			return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(),
+					Const.ExceptionErrorCode.BUS_ERROR_CODE, "消息体类型为空", result);
+		}
+
+		if (message.channelType() != channelType) {
+			if (log.isErrorEnabled()) {
+				log.error(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",消息体类型接口错误,接口消息类型为" + message.getChannelType().getTypeDes()
+							+ ",发布消息的消息类型为" + channelType.getTypeDes());
+			}
+			return ServerResponse.createByError(message.getRequestId(), message.getSerialNumber(),
+					Const.ExceptionErrorCode.BUS_ERROR_CODE, "消息体类型接口错误,接口消息类型为" + message.getChannelType().getTypeDes()
+							+ ",发布消息的消息类型为" + channelType.getTypeDes());
+		}
+		if (log.isInfoEnabled()) {
+			log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",请求发布消息{},消息类型{}",
+					JSON.toJSONString(message), message.getChannelType().getTypeDes());
+		}
+		return ServerResponse.createBySuccess(message.getRequestId(), message.getSerialNumber(), result);
+	}
 
 }

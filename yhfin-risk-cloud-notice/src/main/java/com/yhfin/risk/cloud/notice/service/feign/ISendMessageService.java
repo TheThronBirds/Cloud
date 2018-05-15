@@ -12,11 +12,12 @@
  ********************************************************/
 package com.yhfin.risk.cloud.notice.service.feign;
 
-import com.yhfin.risk.core.common.pojos.dtos.MessageResultDTO;
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -42,7 +43,7 @@ public interface ISendMessageService {
      * @Date: 2018/5/13/15:37
      */
     @RequestMapping(value = "/entryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
-    ServerResponse<MessageResultDTO> entryMessageSynchronizate(EntryMessageSynchronizateDTO message);
+    ServerResponse entryMessageSynchronizate(@RequestBody EntryMessageSynchronizateDTO message);
 
     /**
      * 发送内存同步消息
@@ -55,6 +56,11 @@ public interface ISendMessageService {
      * @Date: 2018/5/13/15:37
      */
     @RequestMapping(value = "/memoryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
-    ServerResponse<MessageResultDTO> memoryMessageSynchronizate(MemoryMessageSynchronizateDTO message);
+    ServerResponse memoryMessageSynchronizate(@RequestBody MemoryMessageSynchronizateDTO message);
+
+
+    @RequestMapping(value = "/staticCalculateNotice", method = RequestMethod.POST, produces = "application/json")
+    ServerResponse staticCalculateMessageSynchronizate(@RequestBody StaticCalculateNoticeDTO message);
+
 
 }

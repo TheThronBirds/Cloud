@@ -64,7 +64,7 @@ public class StaticSingleFundCalculateController {
             if (log.isInfoEnabled()) {
                 log.info(StringUtil.commonLogStart(singleFundCalculate.getSerialNumber(), singleFundCalculate.getRequestId()) + "开始分析静态计算请求,{}", JSON.toJSONString(singleFundCalculate));
             }
-            if (singleFundCalculate.getRiskIds() == null || !singleFundCalculate.getRiskIds().isEmpty()) {
+            if (singleFundCalculate.getRiskIds() == null || singleFundCalculate.getRiskIds().isEmpty()) {
                 analyService.staticCalculateRequestSingleFund(singleFundCalculate.getFundId(), singleFundCalculate.getRequestId(), singleFundCalculate.getSerialNumber(), null);
             } else {
                 analyService.staticCalculateRequestSingleFund(singleFundCalculate.getFundId(), singleFundCalculate.getRequestId(), singleFundCalculate.getSerialNumber(), singleFundCalculate.getRiskIds().toArray(new String[singleFundCalculate.getRiskIds().size()]));

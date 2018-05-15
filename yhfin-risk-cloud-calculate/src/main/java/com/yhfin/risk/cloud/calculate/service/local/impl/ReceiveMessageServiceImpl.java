@@ -16,7 +16,10 @@ import com.yhfin.risk.cloud.calculate.service.local.IReceiveMessageService;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 import com.yhfin.risk.core.synchronizate.message.IMessageSynchronizateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 接收消息中间键消息
@@ -42,9 +45,13 @@ public class ReceiveMessageServiceImpl implements IReceiveMessageService {
      * @author: caohui
      * @Date: 2018/5/11/15:44
      */
+    @StreamListener("memory")
     @Override
     public void memorySynchronizateByMessage(MemoryMessageSynchronizateDTO message) {
-        messageSynchronizateService.memorySynchronizateByMessage(message);
+        CompletableFuture.runAsync(()->{
+            messageSynchronizateService.memorySynchronizateByMessage(message);
+        });
+
     }
 
 }

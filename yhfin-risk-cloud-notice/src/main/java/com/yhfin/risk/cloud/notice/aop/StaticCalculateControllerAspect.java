@@ -60,7 +60,7 @@ public class StaticCalculateControllerAspect {
             throw new YhRiskNoticeException("请求静态风控计算参数错误，请求序号为空或者流水号为空");
         }
         final List<String> allFundIds = getAllFundIds();
-        if (calculateRequest.isCalculateAll()) {
+        if (calculateRequest.getCalculateAll()!=null && calculateRequest.getCalculateAll()) {
             calculateRequest.setFundIds(allFundIds);
         } else {
             List<String> fundIds = calculateRequest.getFundIds();

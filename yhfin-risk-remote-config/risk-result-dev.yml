@@ -1,6 +1,6 @@
 yhfin:
   common:
-     config: risk,swagger
+    config: risk,swagger
   data:
     #数据源实例注入 配置
     config: risk
@@ -37,19 +37,16 @@ yhfin:
       #风控数据库jdbc操作实例名称
       jdbcname: riskJdbcOperations
       #风控数据库连接配置url
-      url: jdbc:oracle:thin:@localhost:1521:orcl
+      url: jdbc:oracle:thin:@192.168.72.128:1521:orcl
       #风控数据库登录用户名
-      username: RISK_DEV
+      username: RISKDEV06
       #风控数据库登录密码
-      password: RISK_DEV
+      password: RISKDEV06
       #风控数据源驱动类型
       driverClassName: oracle.jdbc.OracleDriver
       #风控数据源 生命式数据源 事物实例名称
       transactionManager: RisktransactionManager
-    #sql配置
-    tableSqls:
-      #查询所有风控条目
-      riskSetQueryRiskIdAll: SELECT I_RISK_ID FROM RISKSET WHERE I_RISK_ID > 0
+      
 
 
 
@@ -81,10 +78,10 @@ server:
 spring:
   #消息中间件rabbitmq配置
   rabbitmq:
-    host: 192.168.100.100
+    host: 192.168.74.226
     prot: 5672
-    username: admin
-    password: 415ilyILY
+    username: yhfin
+    password: yhfin
   cloud:
     stream:
       bindings:
@@ -108,6 +105,9 @@ spring:
           contentType: application/json
         queryCalculate:
           destination: queryCalculate-channel
+          contentType: application/json
+        notice:
+          destination: notice-channel
           contentType: application/json
     loadbalancer:
       retry:

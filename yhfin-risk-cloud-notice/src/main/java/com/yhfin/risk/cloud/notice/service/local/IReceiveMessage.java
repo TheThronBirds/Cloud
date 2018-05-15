@@ -12,6 +12,9 @@
  ********************************************************/
 package com.yhfin.risk.cloud.notice.service.local;
 
+import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
+import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
+
 /**
  * 接收消息
  * 包名称：com.yhfin.risk.cloud.notice.service.local
@@ -22,4 +25,27 @@ package com.yhfin.risk.cloud.notice.service.local;
  */
 
 public interface IReceiveMessage {
+
+
+    /**
+     * 接收分析结果消息
+     *
+     * @param message 消息体
+     * @Title messageResult
+     * @Description: 接收分析结果消息
+     * @author: caohui
+     * @Date: 2018/5/13/23:16
+     */
+    void messageAnaly(SingleFundAnalyResultDTO message);
+
+    /**
+     * 接收处理结果消息
+     *
+     * @param message 消息体
+     * @Title messageResult
+     * @Description: 接收处理结果消息
+     * @author: caohui
+     * @Date: 2018/5/13/23:16
+     */
+    void messageResult(ResultHandleResultDTO message);
 }

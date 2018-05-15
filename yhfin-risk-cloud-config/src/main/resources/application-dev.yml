@@ -10,16 +10,16 @@ eureka:
 
 spring:
   rabbitmq:
-    host: 192.168.100.100
+    host: 192.168.74.226
     prot: 5672
-    username: admin
-    password: 415ilyILY
+    username: yhfin
+    password: yhfin
   cloud:
     config:
       label: dev
       server:
         git: #配置git仓库地址
-          basedir: D:/workplace/idea/yhfin-risk-cloud-parent
+          basedir: D:/workplace/yhfin/yhfin-risk-cloud-parent
           uri: http://gitlab.yhfin.club:81/risk/server-group/risk-cloud-core.git
           search-paths: yhfin-risk-remote-config
           username: caohui

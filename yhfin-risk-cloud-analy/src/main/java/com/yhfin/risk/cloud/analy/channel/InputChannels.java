@@ -41,4 +41,13 @@ public interface InputChannels {
      */
     @Input("entry")
     SubscribableChannel entry();
+
+
+    /**
+     * 同步静态计算结果
+     *
+     * @return
+     */
+    @Input("notice")
+    SubscribableChannel notice();
 }

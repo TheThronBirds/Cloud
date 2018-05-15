@@ -58,6 +58,11 @@ public class MessageServiceImpl implements IMessageService {
     @Autowired
     @Qualifier("result")
     private MessageChannel resultChannel;
+    
+    
+    @Autowired
+    @Qualifier("notice")
+    private MessageChannel noticeChannel;
 
     /**
      * 发送消息
@@ -88,6 +93,8 @@ public class MessageServiceImpl implements IMessageService {
                 return riskChannel.send(MessageBuilder.withPayload(message).build(), 1000 * 60 * 5);
             case RESULT:
                 return resultChannel.send(MessageBuilder.withPayload(message).build(), 1000 * 60 * 5);
+            case NOTICE:
+                return noticeChannel.send(MessageBuilder.withPayload(message).build(), 1000 * 60 * 5);
             default:
                 if (log.isErrorEnabled()) {
                     log.error("没有对应的消息类型,消息{},消息类型{}", JSON.toJSONString(message), JSON.toJSONString(channelType));

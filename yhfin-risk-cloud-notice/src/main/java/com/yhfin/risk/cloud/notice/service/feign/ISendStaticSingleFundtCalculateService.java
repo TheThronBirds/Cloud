@@ -14,7 +14,6 @@ package com.yhfin.risk.cloud.notice.service.feign;
 
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

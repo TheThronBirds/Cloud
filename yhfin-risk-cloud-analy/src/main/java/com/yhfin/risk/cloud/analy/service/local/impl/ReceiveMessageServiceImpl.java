@@ -13,12 +13,17 @@
 package com.yhfin.risk.cloud.analy.service.local.impl;
 
 import com.yhfin.risk.cloud.analy.service.local.IReceiveMessageService;
+import com.yhfin.risk.core.analy.manage.IEntryStaticAnalyManageService;
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 import com.yhfin.risk.core.synchronizate.message.IMessageSynchronizateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 接收消息中间键消息
@@ -35,6 +40,9 @@ public class ReceiveMessageServiceImpl implements IReceiveMessageService {
     @Autowired
     private IMessageSynchronizateService messageSynchronizateService;
 
+    @Autowired
+    private IEntryStaticAnalyManageService entryStaticAnalyManageService;
+
     /**
      * 接收消息同步内存
      *
@@ -44,9 +52,15 @@ public class ReceiveMessageServiceImpl implements IReceiveMessageService {
      * @author: caohui
      * @Date: 2018/5/11/15:44
      */
+    @StreamListener("memory")
     @Override
     public void memorySynchronizateByMessage(MemoryMessageSynchronizateDTO message) {
-        messageSynchronizateService.memorySynchronizateByMessage(message);
+        if(log.isInfoEnabled()){
+            log.info("收到同步内存消息");
+        }
+        CompletableFuture.runAsync(() -> {
+            messageSynchronizateService.memorySynchronizateByMessage(message);
+        });
     }
 
     /**
@@ -58,8 +72,34 @@ public class ReceiveMessageServiceImpl implements IReceiveMessageService {
      * @author: caohui
      * @Date: 2018/5/11/15:44
      */
+    @StreamListener("entry")
     @Override
     public void entrySynchronizateByMessage(EntryMessageSynchronizateDTO message) {
-        messageSynchronizateService.entrySynchronizateByMessage(message);
+        if(log.isInfoEnabled()){
+            log.info("收到同步条目消息");
+        }
+        CompletableFuture.runAsync(() -> {
+            messageSynchronizateService.entrySynchronizateByMessage(message);
+        });
+    }
+
+
+    /**
+     * 同步计算结果
+     * @Title updateStaticCalculateState
+     * @Description: 同步计算结果
+     * @param  staticCalculateNotice 消息
+     * @author: caohui
+     * @Date:  2018/5/14/2:42
+     */
+    @StreamListener("notice")
+    @Override
+    public void updateStaticCalculateState(StaticCalculateNoticeDTO staticCalculateNotice){
+        if(log.isInfoEnabled()){
+            log.info("收到同步静态计算总体结果信息");
+        }
+        CompletableFuture.runAsync(() -> {
+            entryStaticAnalyManageService.updateStaticCalculateState(staticCalculateNotice);
+        });
     }
 }
