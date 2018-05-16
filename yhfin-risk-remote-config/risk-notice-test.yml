@@ -37,9 +37,9 @@ yhfin:
       #风控数据库连接配置url
       url: jdbc:oracle:thin:@192.168.72.128:1521:orcl
       #风控数据库登录用户名
-      username: RISKDEV06
+      username: RISKTEST06
       #风控数据库登录密码
-      password: RISKDEV06
+      password: RISKTEST06
       #风控数据源驱动类型
       driverClassName: oracle.jdbc.OracleDriver
       #风控数据源 生命式数据源 事物实例名称
@@ -80,8 +80,7 @@ hystrix:
             #hystrix默认熔断时间
             timeoutInMilliseconds: 30000
 
-server:
-  port: 9004
+
 spring:
   #消息中间件rabbitmq配置
   rabbitmq:

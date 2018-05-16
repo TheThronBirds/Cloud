@@ -165,6 +165,15 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 	}
 
 	private void judgeSuccessFinish(String requestId, String serialNumber) {
+		
+		if(log.isInfoEnabled()){
+			log.info("判断静态请求是否处理完毕");
+		}
+		
+		if(log.isInfoEnabled()){
+			log.info("需要处理的基金数量{}",fundCalculateResults.size());
+			log.info("成功静态计算完毕基金数量{}",successCalculate.get());
+		}
 		if (successCalculate.get() == fundCalculateResults.size()) {
 			if (log.isInfoEnabled()) {
 				log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",所有基金处理完毕");
@@ -208,6 +217,7 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 		StaticSingleFundCalculateResultDTO staticSingleFundCalculateResultDTO = fundCalculateResults.get(fundId);
 		staticSingleFundCalculateResultDTO.setSendValid(sendValid);
 		if (!sendValid) {
+			successCalculate.incrementAndGet();
 			staticSingleFundCalculateResultDTO.setResultValid(true);
 		}
 		judgeSuccessFinish(requestId, serialNumber);

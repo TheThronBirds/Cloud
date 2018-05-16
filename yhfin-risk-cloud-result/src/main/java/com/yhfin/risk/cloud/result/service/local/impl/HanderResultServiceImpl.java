@@ -131,7 +131,7 @@ public class HanderResultServiceImpl implements IHanderResultService {
 			StructDescriptor recDesc = StructDescriptor.createDescriptor("RISKRESULT_STATIC_BASE_OBJ", this.connection);
 			ArrayList<STRUCT> pstruct = new ArrayList<STRUCT>();
 			for (FinalStaticEntryCalculateResultDTO result : calculateResults) {
-				Object[] objs = new Object[13];
+				Object[] objs = new Object[15];
 				objs[0] = result.getResultId();
 				objs[1] = Integer.valueOf(result.getRiskId());
 				objs[2] = result.getRiskDescription();
@@ -145,6 +145,8 @@ public class HanderResultServiceImpl implements IHanderResultService {
 				objs[10] = result.getOffendType();
 				objs[11] = result.getEnValue();
 				objs[12] = result.getEnResultValue();
+				objs[13] = result.getVcFzValue();
+				objs[14] = result.getVcFmValue();
 				STRUCT struct = new STRUCT(recDesc, this.connection, objs);
 				pstruct.add(struct);
 			}
