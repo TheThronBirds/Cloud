@@ -22,14 +22,24 @@ import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 import com.yhfin.risk.core.common.utils.StringUtil;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.PostConstruct;
 
 /**
  * 静态风控请求计算管理服务 包名称：com.yhfin.risk.cloud.notice.service.local.impl
@@ -42,6 +52,15 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 
 	@Autowired
 	private ISendMessageService sendMessageService;
+
+	private BlockingDeque<HanderStaticCalculateState<?>> handerStaticCalculateStates;
+
+	{
+		this.handerStaticCalculateStates = new LinkedBlockingDeque<>(100000);
+	}
+
+	private ExecutorService staticMessageExecutor = Executors.newSingleThreadExecutor();
+
 	private ConcurrentHashMap<String, StaticSingleFundCalculateResultDTO> fundCalculateResults = new ConcurrentHashMap<>(
 			400);
 
@@ -54,6 +73,39 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 	 * 计算中的版本号
 	 */
 	private String currentSerialNumber;
+
+	@PostConstruct
+	public void init() {
+		staticMessageExecutor.submit(() -> {
+			while (true) {
+				HanderStaticCalculateState<?> staticCalculateStateMessage = handerStaticCalculateStates.take();
+				handerMessage(staticCalculateStateMessage);
+			}
+		});
+	}
+
+	/**
+	 * 
+	 * 处理静态计算消息
+	 *
+	 *
+	 * @Title handerMessage
+	 * @Description: 处理静态计算消息
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:08:58
+	 */
+	private void handerMessage(HanderStaticCalculateState<?> message) {
+		Object handerMessage = message.getMessage();
+		if (handerMessage instanceof StaticCalculateNoticeDTO) {
+			realInitNoticeState((StaticCalculateNoticeDTO) handerMessage);
+		} else if (handerMessage instanceof FundSendState) {
+			realHanderFundSendState((FundSendState) handerMessage);
+		} else if (handerMessage instanceof SingleFundAnalyResultDTO) {
+			realHanderSingleFundAnalyResult((SingleFundAnalyResultDTO) handerMessage);
+		} else if (handerMessage instanceof ResultHandleResultDTO) {
+			realHanderResultHandleResultDTO((ResultHandleResultDTO) handerMessage);
+		}
+	}
 
 	/**
 	 * 初始化静态计算请求
@@ -97,9 +149,38 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 	 */
 	@Override
 	public synchronized void hander(ResultHandleResultDTO message) {
+		HanderStaticCalculateState<ResultHandleResultDTO> handerStaticCalculateState = new HanderStaticCalculateState<>();
+		handerStaticCalculateState.setMessage(message);
+		handerStaticCalculateState.setRequestId(message.getRequestId());
+		handerStaticCalculateState.setSerialNumber(message.getSerialNumber());
+		try {
+			handerStaticCalculateStates.put(handerStaticCalculateState);
+		} catch (InterruptedException e) {
+			if (log.isErrorEnabled()) {
+				log.error("基金计算结果消息处理失败", e);
+			}
+			throw new YhRiskNoticeException("基金计算结果消息处理失败" + e);
+		}
+
+	}
+
+	/**
+	 * 
+	 * 真正处理结果消息
+	 *
+	 *
+	 * @Title realHanderResultHandleResultDTO
+	 * @Description: 真正处理结果消息
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:42:17
+	 */
+	private void realHanderResultHandleResultDTO(ResultHandleResultDTO message) {
 		if (calculateProcess && StringUtils.equals(message.getSerialNumber(), this.currentSerialNumber)) {
 			StaticSingleFundCalculateResultDTO staticSingleFundCalculateResultDTO = fundCalculateResults
 					.get(message.getFundId());
+			if (staticSingleFundCalculateResultDTO == null) {
+				return;
+			}
 			staticSingleFundCalculateResultDTO.append(message);
 			if (staticSingleFundCalculateResultDTO.getAnalyValid()) {
 				if (log.isInfoEnabled()) {
@@ -131,7 +212,32 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 	 * @Date: 2018/5/13/23:20
 	 */
 	@Override
-	public synchronized void hander(SingleFundAnalyResultDTO message) {
+	public void hander(SingleFundAnalyResultDTO message) {
+		HanderStaticCalculateState<SingleFundAnalyResultDTO> handerStaticCalculateState = new HanderStaticCalculateState<>();
+		handerStaticCalculateState.setMessage(message);
+		handerStaticCalculateState.setRequestId(message.getRequestId());
+		handerStaticCalculateState.setSerialNumber(message.getSerialNumber());
+		try {
+			handerStaticCalculateStates.put(handerStaticCalculateState);
+		} catch (InterruptedException e) {
+			if (log.isErrorEnabled()) {
+				log.error("基金分析结果处理失败", e);
+			}
+			throw new YhRiskNoticeException("基金分析结果处理失败" + e);
+		}
+	}
+
+	/**
+	 * 
+	 * 真正处理基金分析结果请求
+	 *
+	 *
+	 * @Title realHanderSingleFundAnalyResult
+	 * @Description: 真正处理基金分析结果请求
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:35:46
+	 */
+	private void realHanderSingleFundAnalyResult(SingleFundAnalyResultDTO message) {
 		if (log.isInfoEnabled()) {
 			log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理基金分析结果消息");
 			log.info("当前通知服务器工作状态:" + calculateProcess);
@@ -143,6 +249,9 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 			}
 			StaticSingleFundCalculateResultDTO staticSingleFundCalculateResultDTO = fundCalculateResults
 					.get(message.getFundId());
+			if (staticSingleFundCalculateResultDTO == null) {
+				return;
+			}
 			if (log.isInfoEnabled()) {
 				log.info("处理前基金{},通知服务器基金状态,{}", message.getFundId(),
 						JSON.toJSONString(staticSingleFundCalculateResultDTO));
@@ -164,15 +273,23 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 		}
 	}
 
+	/**
+	 * 
+	 * 判断所有基金是否全部处理成功
+	 *
+	 *
+	 * @Title judgeSuccessFinish
+	 * @Description: 判断所有基金是否全部处理成功
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:33:42
+	 */
 	private void judgeSuccessFinish(String requestId, String serialNumber) {
-		
-		if(log.isInfoEnabled()){
+		if (log.isInfoEnabled()) {
 			log.info("判断静态请求是否处理完毕");
 		}
-		
-		if(log.isInfoEnabled()){
-			log.info("需要处理的基金数量{}",fundCalculateResults.size());
-			log.info("成功静态计算完毕基金数量{}",successCalculate.get());
+		if (log.isInfoEnabled()) {
+			log.info("需要处理的基金数量{}", fundCalculateResults.size());
+			log.info("成功静态计算完毕基金数量{}", successCalculate.get());
 		}
 		if (successCalculate.get() == fundCalculateResults.size()) {
 			if (log.isInfoEnabled()) {
@@ -182,7 +299,7 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 			this.calculateProcess = false;
 			this.currentSerialNumber = "";
 			this.fundCalculateResults.clear();
-			this.successCalculate = new AtomicInteger();
+			this.successCalculate.set(0);
 			staticCalculateNotice.setFinish(true);
 			staticCalculateNotice.setRequestId(requestId);
 			staticCalculateNotice.setSerialNumber(serialNumber);
@@ -213,14 +330,51 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 	}
 
 	@Override
-	public synchronized void hander(String fundId, boolean sendValid, String requestId, String serialNumber) {
-		StaticSingleFundCalculateResultDTO staticSingleFundCalculateResultDTO = fundCalculateResults.get(fundId);
-		staticSingleFundCalculateResultDTO.setSendValid(sendValid);
-		if (!sendValid) {
-			successCalculate.incrementAndGet();
-			staticSingleFundCalculateResultDTO.setResultValid(true);
+	public void hander(String fundId, boolean sendValid, String requestId, String serialNumber) {
+		FundSendState fundSendState = new FundSendState();
+		fundSendState.setRequestId(requestId);
+		fundSendState.setSerialNumber(serialNumber);
+		fundSendState.setSendValid(sendValid);
+		fundSendState.setFundId(fundId);
+		HanderStaticCalculateState<FundSendState> handerStaticCalculateState = new HanderStaticCalculateState<>();
+		handerStaticCalculateState.setRequestId(requestId);
+		handerStaticCalculateState.setSerialNumber(serialNumber);
+		handerStaticCalculateState.setMessage(fundSendState);
+		try {
+			handerStaticCalculateStates.put(handerStaticCalculateState);
+		} catch (InterruptedException e) {
+			if (log.isErrorEnabled()) {
+				log.error("基金发送结果消息处理失败", e);
+			}
+			throw new YhRiskNoticeException("基金发送结果消息处理失败" + e);
 		}
-		judgeSuccessFinish(requestId, serialNumber);
+
+	}
+
+	/**
+	 * 
+	 * 真正处理基金发送结果消息
+	 *
+	 *
+	 * @Title realHanderFundSendState
+	 * @Description: 真正处理基金发送结果消息
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:25:00
+	 */
+	private void realHanderFundSendState(FundSendState fundSendState) {
+		if (this.calculateProcess && StringUtils.equals(this.currentSerialNumber, fundSendState.getSerialNumber())) {
+			StaticSingleFundCalculateResultDTO staticSingleFundCalculateResultDTO = fundCalculateResults
+					.get(fundSendState.getFundId());
+			if (staticSingleFundCalculateResultDTO != null) {
+				boolean sendValid = fundSendState.isSendValid();
+				staticSingleFundCalculateResultDTO.setSendValid(sendValid);
+				if (!sendValid) {
+					successCalculate.incrementAndGet();
+					staticSingleFundCalculateResultDTO.setResultValid(true);
+					judgeSuccessFinish(fundSendState.getRequestId(), fundSendState.getSerialNumber());
+				}
+			}
+		}
 	}
 
 	@Override
@@ -228,10 +382,66 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 		StaticCalculateNoticeDTO staticCalculateNotice = new StaticCalculateNoticeDTO();
 		staticCalculateNotice.setFinish(true);
 		staticCalculateNotice.setRequestId("");
-		staticCalculateNotice.setSerialNumber(this.currentSerialNumber);
-		sendMessageService.staticCalculateMessageSynchronizate(staticCalculateNotice);
-		this.calculateProcess = false;
-		this.currentSerialNumber = "";
+		staticCalculateNotice.setSerialNumber("");
+		HanderStaticCalculateState<StaticCalculateNoticeDTO> handerStaticCalculateState = new HanderStaticCalculateState<>();
+		handerStaticCalculateState.setMessage(staticCalculateNotice);
+		try {
+			handerStaticCalculateStates.put(handerStaticCalculateState);
+		} catch (InterruptedException e) {
+			if (log.isErrorEnabled()) {
+				log.error("初始化通知中心出错", e);
+			}
+			throw new YhRiskNoticeException("初始化通知中心出错" + e);
+		}
+	}
+
+	/**
+	 * 
+	 * 实际处理通知服务器初始化状态消息
+	 *
+	 *
+	 * @Title realInitNoticeState
+	 * @Description: 实际处理通知服务器初始化状态消息
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:18:04
+	 */
+	private void realInitNoticeState(StaticCalculateNoticeDTO staticCalculateNotice) {
+		if (staticCalculateNotice.getFinish()) {
+			this.calculateProcess = false;
+			this.currentSerialNumber = "";
+			sendMessageService.staticCalculateMessageSynchronizate(staticCalculateNotice);
+		}
+	}
+
+	/**
+	 * 
+	 * 静态风控结果处理消息 包名称：com.yhfin.risk.cloud.notice.service.local.impl
+	 * 类名称：HanderStaticCalculateState 类描述：静态风控结果处理消息 创建人：@author caohui
+	 * 创建时间：2018/5/13/12:20
+	 */
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	private class HanderStaticCalculateState<T> {
+		private String requestId;
+		private String serialNumber;
+		private T message;
+	}
+
+	/**
+	 * 
+	 * 基金发送状态 包名称：com.yhfin.risk.cloud.notice.service.local.impl
+	 * 类名称：FundSendState 类描述：基金发送状态 创建人：@author caohui 创建时间：2018/5/13/12:20
+	 */
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	private class FundSendState {
+		private String fundId;
+		private String requestId;
+		private String serialNumber;
+		private boolean sendValid;
+
 	}
 
 }

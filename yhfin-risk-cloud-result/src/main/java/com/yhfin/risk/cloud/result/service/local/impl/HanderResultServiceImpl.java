@@ -14,11 +14,9 @@ package com.yhfin.risk.cloud.result.service.local.impl;
 
 import com.yhfin.risk.cloud.result.service.feign.ISendMessageService;
 import com.yhfin.risk.cloud.result.service.local.IHanderResultService;
-import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 import com.yhfin.risk.core.common.utils.StringUtil;
-import com.yhfin.risk.core.dao.IRiskDao;
 import lombok.extern.slf4j.Slf4j;
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
@@ -27,7 +25,6 @@ import oracle.sql.StructDescriptor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -49,21 +46,22 @@ public class HanderResultServiceImpl implements IHanderResultService {
 
 	@Autowired
 	private ISendMessageService messageService;
-
-	/**
-	 * 当前流水号
-	 */
-	private String currentSerialNumber;
 	private Connection connection;
 	private ExecutorService executorService = new ThreadPoolExecutor(3, Runtime.getRuntime().availableProcessors() * 2,
 			0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
-
 	private BlockingDeque<FinalStaticEntryCalculateResultDTO> finalStaticEntryCalculateResultDTOs;
-
-	{
-		this.finalStaticEntryCalculateResultDTOs = new LinkedBlockingDeque<>(20000000);
-	}
-
+	/**
+	 * 定时线程是否启动标识
+	 */
+	private boolean scheduleStart;
+	/**
+	 * 定时线程池
+	 */
+	private ScheduledExecutorService scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
+	/**
+	 * 定时线程去队列中拿取数据，失败次数
+	 */
+	private AtomicInteger invalidTakeNumber = new AtomicInteger();
 	@Value("${yhfin.data.risk.url}")
 	private String url;
 	@Value("${yhfin.data.risk.username}")
@@ -71,11 +69,24 @@ public class HanderResultServiceImpl implements IHanderResultService {
 	@Value("${yhfin.data.risk.password}")
 	private String password;
 
+	{
+		this.finalStaticEntryCalculateResultDTOs = new LinkedBlockingDeque<>(20000000);
+	}
+
 	@PostConstruct
 	private void init() {
 		initConnection();
 	}
 
+	/**
+	 * 初始化数据库连接
+	 *
+	 *
+	 * @Title initConnection
+	 * @Description: 初始化数据库连接
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:58:10
+	 */
 	private void initConnection() {
 		try {
 			if (connection != null) {
@@ -90,14 +101,45 @@ public class HanderResultServiceImpl implements IHanderResultService {
 		}
 	}
 
-	@Scheduled(fixedDelay = 100)
-	public void scheduledForAll() {
-		if (finalStaticEntryCalculateResultDTOs.size() > 0) {
-			List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs = new ArrayList<>(100000);
-			finalStaticEntryCalculateResultDTOs.drainTo(calculateResultDTOs, 10000);
-			CompletableFuture.runAsync(() -> {
-				forAllCalculateResultInfo(calculateResultDTOs);
-			}, executorService);
+	/**
+	 * 
+	 * 启动定时线程从队列中拿取数据，存储到数据库中
+	 *
+	 *
+	 * @Title scheduledForAll
+	 * @Description: 启动定时线程从队列中拿取数据，存储到数据库中
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:56:17
+	 */
+	private synchronized void scheduledForAll() {
+		if (!scheduleStart) {
+			changeScheduleStart(true);
+			if (scheduleStart) {
+				if (log.isInfoEnabled()) {
+					log.info("启动定时取结果线程取数据");
+				}
+				scheduleTakeResult.scheduleAtFixedRate(() -> {
+					if (finalStaticEntryCalculateResultDTOs.size() > 0) {
+						invalidTakeNumber.set(0);
+						List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs = new ArrayList<>(100000);
+						finalStaticEntryCalculateResultDTOs.drainTo(calculateResultDTOs, 10000);
+						CompletableFuture.runAsync(() -> {
+							forAllCalculateResultInfo(calculateResultDTOs);
+						}, executorService);
+					} else {
+						invalidTakeNumber.incrementAndGet();
+						if (invalidTakeNumber.get() == 30 * 10) {
+							changeScheduleStart(false);
+							if (!scheduleStart) {
+								if (log.isInfoEnabled()) {
+									log.info("长时间没有结果信息,定时取结果线程停止取数据");
+								}
+								scheduleTakeResult.shutdown();
+							}
+						}
+					}
+				}, 100, 100, TimeUnit.MILLISECONDS);
+			}
 		}
 	}
 
@@ -115,10 +157,47 @@ public class HanderResultServiceImpl implements IHanderResultService {
 	@Override
 	public void handerResults(List<FinalStaticEntryCalculateResultDTO> calculateResultDTOList) {
 		if (calculateResultDTOList != null && !calculateResultDTOList.isEmpty()) {
+			if (!scheduleStart) {
+				scheduledForAll();
+			}
 			finalStaticEntryCalculateResultDTOs.addAll(calculateResultDTOList);
 		}
 	}
 
+	@Override
+	public void handerResult(FinalStaticEntryCalculateResultDTO calculateResult) {
+		if (calculateResult != null) {
+			try {
+				if (log.isInfoEnabled()) {
+					log.info(
+							StringUtil.commonLogStart(calculateResult.getSerialNumber(), calculateResult.getRequestId())
+									+ ",缓存一条计算结果信息");
+				}
+				if (!scheduleStart) {
+					scheduledForAll();
+				}
+				finalStaticEntryCalculateResultDTOs.put(calculateResult);
+			} catch (InterruptedException e) {
+				if (log.isErrorEnabled()) {
+					log.error(
+							StringUtil.commonLogStart(calculateResult.getSerialNumber(), calculateResult.getRequestId())
+									+ ",存放计算结果到范围中,发生错误");
+					log.error("错误:", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * 调用存储过程存储计算结果信息
+	 *
+	 *
+	 * @Title forAllCalculateResultInfo
+	 * @Description: 调用存储过程存储计算结果信息
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:55:39
+	 */
 	private void forAllCalculateResultInfo(List<FinalStaticEntryCalculateResultDTO> calculateResults) {
 		if (calculateResults == null || calculateResults.isEmpty()) {
 			return;
@@ -197,6 +276,16 @@ public class HanderResultServiceImpl implements IHanderResultService {
 		}
 	}
 
+	/**
+	 * 
+	 * 向通知中心发送结果处理信息
+	 *
+	 *
+	 * @Title sendMeaage
+	 * @Description: 向通知中心发送结果处理信息
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午8:59:27
+	 */
 	private void sendMeaage(List<FinalStaticEntryCalculateResultDTO> calculateResults, boolean valid) {
 		if (calculateResults != null && !calculateResults.isEmpty()) {
 			if (log.isInfoEnabled()) {
@@ -225,24 +314,18 @@ public class HanderResultServiceImpl implements IHanderResultService {
 		}
 	}
 
-	@Override
-	public void handerResult(FinalStaticEntryCalculateResultDTO calculateResult) {
-		if (calculateResult != null) {
-			try {
-				if (log.isInfoEnabled()) {
-					log.info(
-							StringUtil.commonLogStart(calculateResult.getSerialNumber(), calculateResult.getRequestId())
-									+ ",缓存一条计算结果信息");
-				}
-				finalStaticEntryCalculateResultDTOs.put(calculateResult);
-			} catch (InterruptedException e) {
-				if (log.isErrorEnabled()) {
-					log.error(
-							StringUtil.commonLogStart(calculateResult.getSerialNumber(), calculateResult.getRequestId())
-									+ ",存放计算结果到范围中,发生错误");
-					log.error("错误:", e);
-				}
-			}
-		}
+	/**
+	 * 
+	 * 更新定时去结果线程是否启动标识
+	 *
+	 *
+	 * @Title changeScheduleStart
+	 * @Description: 更新定时去结果线程是否启动标识
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:48:45
+	 */
+	private synchronized void changeScheduleStart(boolean schedule) {
+		this.scheduleStart = schedule;
 	}
+
 }

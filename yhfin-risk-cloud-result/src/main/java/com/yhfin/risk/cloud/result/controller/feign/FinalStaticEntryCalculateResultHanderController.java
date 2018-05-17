@@ -18,7 +18,6 @@ import com.yhfin.risk.core.common.reponse.ServerResponse;
 import com.yhfin.risk.core.common.utils.StringUtil;
 
 import lombok.extern.slf4j.Slf4j;
-import oracle.net.aso.h;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,11 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 结果处理 包名称：com.yhfin.risk.cloud.result.controller.feign

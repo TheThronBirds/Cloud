@@ -12,7 +12,6 @@
  ********************************************************/
 package com.yhfin.risk.cloud.calculate.service.local;
 
-import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 
 /**

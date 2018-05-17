@@ -21,14 +21,14 @@ import com.yhfin.risk.core.common.utils.StringUtil;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import org.springframework.web.client.RestTemplate;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * 处理计算请求 包名称：com.yhfin.risk.cloud.analy.service.local.impl
@@ -38,36 +38,118 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class ManageServiceImpl implements IManageService {
 
+	private ExecutorService executorService = new ThreadPoolExecutor(3, Runtime.getRuntime().availableProcessors() * 2,
+			0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
 
-	private ExecutorService singleThreadExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MICROSECONDS,
-			new LinkedBlockingQueue<Runnable>(100000), new ThreadPoolExecutor.AbortPolicy());
+	private ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
-	private ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(1);  
-	
+	private ScheduledExecutorService scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
+
+	/**
+	 * 定时线程去队列中拿取数据，失败次数
+	 */
+	private AtomicInteger invalidTakeNumber = new AtomicInteger();
+
+	/**
+	 * 定时线程是否启动标识
+	 */
+	private boolean scheduleStart;
+
+	private BlockingDeque<FinalStaticEntryCalculateDTO> finalStaticEntryCalculates;
+	{
+		this.finalStaticEntryCalculates = new LinkedBlockingDeque<>(20000000);
+	}
+
 	@Autowired
 	private IEntryStaticAnalyService entryStaticAnalyService;
 
 	@Autowired
 	private ISendEntryStaticCalculateService sendEntryStaticCalculateService;
 
-	private List<FinalStaticEntryCalculateDTO> cacheFinalStaticEntryCalculates = new ArrayList<>(10000);
+	/**
+	 * 
+	 * 更新定时线程是否启动标识
+	 *
+	 *
+	 * @Title changeScheduleStart
+	 * @Description: 更新定时线程是否启动标识
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:48:45
+	 */
+	private synchronized void changeScheduleStart(boolean schedule) {
+		this.scheduleStart = schedule;
+	}
+
+	/**
+	 * 
+	 * 启动定时线程从队列中拿取数据
+	 *
+	 *
+	 * @Title scheduledForAll
+	 * @Description: 启动定时线程从队列中拿取数据
+	 * @author: caohui
+	 * @Date: 2018年5月17日/上午9:56:17
+	 */
+	private synchronized void scheduledForAll() {
+		if (!scheduleStart) {
+			changeScheduleStart(true);
+			if (scheduleStart) {
+				if(log.isInfoEnabled()){
+					log.info("启动定时取结果线程取数据");
+				}
+				scheduleTakeResult.scheduleAtFixedRate(() -> {
+					if (finalStaticEntryCalculates.size() > 0) {
+						invalidTakeNumber.set(0);
+						List<FinalStaticEntryCalculateDTO> calculateResultDTOs = new ArrayList<>(8000);
+						finalStaticEntryCalculates.drainTo(calculateResultDTOs, 4000);
+						CompletableFuture.runAsync(() -> {
+							sendFinalStaticEntryCalculates(calculateResultDTOs);
+						}, executorService);
+					} else {
+						invalidTakeNumber.incrementAndGet();
+						if (invalidTakeNumber.get() == 30 * 10) {
+							changeScheduleStart(false);
+							if (!scheduleStart) {
+								if(log.isInfoEnabled()){
+									log.info("长时间没有结果信息,定时取结果线程停止取数据");
+								}
+								scheduleTakeResult.shutdown();
+							}
+						}
+					}
+				}, 100, 100, TimeUnit.MILLISECONDS);
+			}
+		}
+	}
 
 	@PostConstruct
 	private void init() {
-		singleThreadExecutor.submit(() -> {
+		singleThreadExecutor.execute(() -> {
 			while (true) {
 				FinalStaticEntryCalculateDTO finalStaticEntryCalculateDTO = entryStaticAnalyService
 						.finalStaticEntryCalculateTake();
 				if (finalStaticEntryCalculateDTO != null) {
-					CompletableFuture.runAsync(() -> {
-						if (log.isInfoEnabled()) {
-							log.info(StringUtil.commonLogStart(
+					if (log.isInfoEnabled()) {
+						log.info(StringUtil.commonLogStart(
+								finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getSerialNumber(),
+								finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getRequestId()
+										+ ",把计算数据发送给计算服务"));
+					}
+					try {
+						finalStaticEntryCalculates.put(finalStaticEntryCalculateDTO);
+						invalidTakeNumber.set(0);
+						if (!scheduleStart) {
+							scheduledForAll();
+						}
+					} catch (InterruptedException e) {
+						if (log.isErrorEnabled()) {
+							log.error(StringUtil.commonLogStart(
 									finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getSerialNumber(),
 									finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getRequestId()
-											+ ",把计算数据发送给计算服务"));
+											+ ",把计算数据发送给计算服务失败"));
+							log.error("错误原因:" + e, e);
 						}
-						sendFinalStaticEntryCalculate(finalStaticEntryCalculateDTO);
-					});
+					}
 				}
 			}
 		});
@@ -87,7 +169,7 @@ public class ManageServiceImpl implements IManageService {
 	 * @Date: 2018/5/13/23:33
 	 */
 	@Override
-	public ServerResponse sendFinalStaticEntryCalculates(
+	public ServerResponse<?> sendFinalStaticEntryCalculates(
 			List<FinalStaticEntryCalculateDTO> finalStaticEntryCalculates) {
 		if (finalStaticEntryCalculates != null && !finalStaticEntryCalculates.isEmpty()) {
 			String requestId = finalStaticEntryCalculates.get(0).getFinalStaticEntryCalculateResult().getRequestId();
@@ -115,7 +197,7 @@ public class ManageServiceImpl implements IManageService {
 	 * @Date: 2018/5/13/23:33
 	 */
 	@Override
-	public ServerResponse sendFinalStaticEntryCalculate(FinalStaticEntryCalculateDTO finalStaticEntryCalculate) {
+	public ServerResponse<?> sendFinalStaticEntryCalculate(FinalStaticEntryCalculateDTO finalStaticEntryCalculate) {
 		return sendEntryStaticCalculateService.consiseCalculate(finalStaticEntryCalculate);
 	}
 

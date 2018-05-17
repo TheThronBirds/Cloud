@@ -13,6 +13,7 @@
 package com.yhfin.risk.cloud.calculate.controller.feign;
 
 import com.yhfin.risk.cloud.calculate.service.feign.ISendCalculateResultService;
+import com.yhfin.risk.cloud.calculate.service.local.ICaculateResultManageService;
 import com.yhfin.risk.core.calculate.reduce.ICalculateService;
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateResultDTO;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * 接收计算请求 包名称：com.yhfin.risk.cloud.calculate.controller.feign
@@ -43,13 +43,13 @@ public class StaticSingleFundCalculateController {
 	private ICalculateService calculateService;
 
 	@Autowired
-	private ISendCalculateResultService sendCalculateResultService;
+	private ICaculateResultManageService caculateResultManageService;
 
 	private ExecutorService executorService = new ThreadPoolExecutor(3, Runtime.getRuntime().availableProcessors() * 2,
 			0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
 
 	@RequestMapping(value = "/consiseCalculates", method = RequestMethod.POST)
-	public List<ServerResponse<String>> consiseCalculates(
+	public ServerResponse<String> consiseCalculates(
 			@RequestBody List<FinalStaticEntryCalculateDTO> finalStaticEntryCalculates) {
 		if (log.isInfoEnabled()) {
 			log.info(StringUtil.commonLogStart(
@@ -59,18 +59,17 @@ public class StaticSingleFundCalculateController {
 		}
 		String serialNumber = finalStaticEntryCalculates.get(0).getFinalStaticEntryCalculateResult().getSerialNumber();
 		String requestId = finalStaticEntryCalculates.get(0).getFinalStaticEntryCalculateResult().getRequestId();
+
 		CompletableFuture.runAsync(() -> {
 			finalStaticEntryCalculates.stream().parallel().forEach((item) -> {
 				CompletableFuture.runAsync(() -> {
-					FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = calculateService
-							.calculateRequest(item);
-
+					caculateResultManageService
+							.putFinalStaticEntryCalculateResultDTOs(calculateService.calculateRequest(item));
 				}, executorService);
 			});
 		}, executorService);
-		return finalStaticEntryCalculates.parallelStream()
-				.map((item) -> ServerResponse.createBySuccess(requestId, serialNumber, ""))
-				.collect(Collectors.toList());
+
+		return ServerResponse.createBySuccess(requestId, serialNumber, "");
 	}
 
 	@RequestMapping(value = "/consiseCalculate", method = RequestMethod.POST, produces = "application/json")
@@ -86,11 +85,7 @@ public class StaticSingleFundCalculateController {
 		CompletableFuture.runAsync(() -> {
 			FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = calculateService
 					.calculateRequest(finalStaticEntryCalculate);
-			if (log.isInfoEnabled()) {
-				log.info(StringUtil.commonLogStart(finalStaticEntryCalculateResult.getSerialNumber(),
-						finalStaticEntryCalculateResult.getRequestId()) + ",发送计算结果给结果处理服务");
-			}
-			sendCalculateResultService.sendFinalStaticCalculateResult(finalStaticEntryCalculateResult);
+			caculateResultManageService.putFinalStaticEntryCalculateResultDTOs(finalStaticEntryCalculateResult);
 		}, executorService);
 		return ServerResponse.createBySuccess(requestId, serialNumber);
 	}
