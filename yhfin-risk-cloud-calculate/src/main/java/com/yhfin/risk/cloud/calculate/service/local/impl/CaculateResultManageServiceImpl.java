@@ -68,36 +68,63 @@ public class CaculateResultManageServiceImpl implements ICaculateResultManageSer
 		this.finalStaticEntryCalculateResultDTOs = new LinkedBlockingDeque<>(20000000);
 	}
 
+	int index = 0;
+
 	private synchronized void scheduledForAll() {
-		if (!scheduleStart) {
-			changeScheduleStart(true);
-			if (scheduleStart) {
-				if(log.isInfoEnabled()){
-					log.info("启动定时取结果线程取数据");
-				}
-				scheduleTakeResult.scheduleAtFixedRate(() -> {
-					if (finalStaticEntryCalculateResultDTOs.size() > 0) {
-						invalidTakeNumber.set(0);
-						List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs = new ArrayList<>(100000);
-						finalStaticEntryCalculateResultDTOs.drainTo(calculateResultDTOs, 2000);
-						CompletableFuture.runAsync(() -> {
-							sendResults(calculateResultDTOs);
-						}, executorService);
-					} else {
-						invalidTakeNumber.incrementAndGet();
-						if (invalidTakeNumber.get() == 30 * 10) {
-							changeScheduleStart(false);
-							if (!scheduleStart) {
-								if(log.isInfoEnabled()){
-									log.info("长时间没有结果信息,定时取结果线程停止取数据");
-								}
-								scheduleTakeResult.shutdown();
+		try {
+			if (!scheduleStart) {
+				this.scheduleStart = true;
+				if (scheduleStart) {
+					if (log.isInfoEnabled()) {
+						log.info("启动定时取结果线程取数据");
+					}
+					scheduleTakeResult.scheduleAtFixedRate(() -> {
+						if (finalStaticEntryCalculateResultDTOs.size() > 0) {
+							invalidTakeNumber.set(0);
+							List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs = new ArrayList<>(100000);
+							finalStaticEntryCalculateResultDTOs.drainTo(calculateResultDTOs, 2000);
+							CompletableFuture.runAsync(() -> {
+								sendResults(calculateResultDTOs);
+							}, executorService);
+						} else {
+							invalidTakeNumber.incrementAndGet();
+							if (invalidTakeNumber.get() == 30 * 10) {
+								scheduleShutdown();
 							}
 						}
-					}
-				}, 100, 100, TimeUnit.MILLISECONDS);
+					}, 100, 100, TimeUnit.MILLISECONDS);
+				}
+			}
+			index = 0;
+		} catch (Exception e) {
+			if (index == 0) {
+				index = 1;
+				scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
+				scheduledForAll();
+			} else {
+				if (log.isErrorEnabled()) {
+					log.error("定时线程启动失败，基金重试");
+				}
 			}
 		}
+	}
+
+	private synchronized void scheduleShutdown() {
+		try {
+			if (scheduleStart) {
+				this.scheduleStart = false;
+				if (!scheduleStart) {
+					if (log.isInfoEnabled()) {
+						log.info("长时间没有结果信息,定时取结果线程停止取数据");
+					}
+					scheduleTakeResult.shutdown();
+
+				}
+			}
+		} finally {
+			scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
+		}
+
 	}
 
 	private void sendResults(List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs) {
@@ -125,20 +152,6 @@ public class CaculateResultManageServiceImpl implements ICaculateResultManageSer
 						calculateResultDTO.getRequestId()) + ",接收到一条计算完毕的结果信息");
 			}
 		}
-	}
-
-	/**
-	 * 
-	 * 更新定时去结果线程是否启动标识
-	 *
-	 *
-	 * @Title changeScheduleStart
-	 * @Description: 更新定时去结果线程是否启动标识
-	 * @author: caohui
-	 * @Date: 2018年5月17日/上午9:48:45
-	 */
-	private synchronized void changeScheduleStart(boolean schedule) {
-		this.scheduleStart = schedule;
 	}
 
 }

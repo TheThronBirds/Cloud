@@ -42,8 +42,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
 /**
- * 静态风控请求计算管理服务 包名称：com.yhfin.risk.cloud.notice.service.local.impl
- * 类名称：StaticCalculateManageServiceImpl 类描述：静态风控请求计算管理服务 创建人：@author caohui
+ * 静态风控请求计算管理服务 
+ * 包名称：com.yhfin.risk.cloud.notice.service.local.impl
+ * 类名称：StaticCalculateManageServiceImpl 
+ * 类描述：静态风控请求计算管理服务 
+ * 创建人：@author caohui
  * 创建时间：2018/5/13/16:30
  */
 @Service
@@ -65,6 +68,7 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 			400);
 
 	private AtomicInteger successCalculate = new AtomicInteger();
+	
 	/**
 	 * 是否计算中
 	 */
@@ -381,8 +385,8 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 	public void initNoticeState() {
 		StaticCalculateNoticeDTO staticCalculateNotice = new StaticCalculateNoticeDTO();
 		staticCalculateNotice.setFinish(true);
-		staticCalculateNotice.setRequestId("");
-		staticCalculateNotice.setSerialNumber("");
+		staticCalculateNotice.setRequestId(this.currentSerialNumber);
+		staticCalculateNotice.setSerialNumber(this.currentSerialNumber);
 		HanderStaticCalculateState<StaticCalculateNoticeDTO> handerStaticCalculateState = new HanderStaticCalculateState<>();
 		handerStaticCalculateState.setMessage(staticCalculateNotice);
 		try {
@@ -409,14 +413,19 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 		if (staticCalculateNotice.getFinish()) {
 			this.calculateProcess = false;
 			this.currentSerialNumber = "";
+			this.successCalculate.set(0);
+			this.fundCalculateResults.clear();
 			sendMessageService.staticCalculateMessageSynchronizate(staticCalculateNotice);
 		}
 	}
 
 	/**
 	 * 
-	 * 静态风控结果处理消息 包名称：com.yhfin.risk.cloud.notice.service.local.impl
-	 * 类名称：HanderStaticCalculateState 类描述：静态风控结果处理消息 创建人：@author caohui
+	 * 静态风控结果处理消息 
+	 * 包名称：com.yhfin.risk.cloud.notice.service.local.impl
+	 * 类名称：HanderStaticCalculateState 
+	 * 类描述：静态风控结果处理消息 
+	 * 创建人：@author caohui
 	 * 创建时间：2018/5/13/12:20
 	 */
 	@Getter
@@ -430,8 +439,12 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 
 	/**
 	 * 
-	 * 基金发送状态 包名称：com.yhfin.risk.cloud.notice.service.local.impl
-	 * 类名称：FundSendState 类描述：基金发送状态 创建人：@author caohui 创建时间：2018/5/13/12:20
+	 * 基金发送状态 
+	 * 包名称：com.yhfin.risk.cloud.notice.service.local.impl
+	 * 类名称：FundSendState 
+	 * 类描述：基金发送状态 
+	 * 创建人：@author caohui 
+	 * 创建时间：2018/5/13/12:20
 	 */
 	@Getter
 	@Setter
@@ -441,7 +454,6 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
 		private String requestId;
 		private String serialNumber;
 		private boolean sendValid;
-
 	}
 
 }

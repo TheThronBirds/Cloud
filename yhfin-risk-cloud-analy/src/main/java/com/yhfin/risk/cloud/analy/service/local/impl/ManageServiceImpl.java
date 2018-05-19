@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 /**
  * 处理计算请求 包名称：com.yhfin.risk.cloud.analy.service.local.impl
  * 类名称：ManageServiceImpl 类描述：处理计算请求 创建人：@author caohui 创建时间：2018/5/13/23:28
@@ -65,20 +64,7 @@ public class ManageServiceImpl implements IManageService {
 
 	@Autowired
 	private ISendEntryStaticCalculateService sendEntryStaticCalculateService;
-
-	/**
-	 * 
-	 * 更新定时线程是否启动标识
-	 *
-	 *
-	 * @Title changeScheduleStart
-	 * @Description: 更新定时线程是否启动标识
-	 * @author: caohui
-	 * @Date: 2018年5月17日/上午9:48:45
-	 */
-	private synchronized void changeScheduleStart(boolean schedule) {
-		this.scheduleStart = schedule;
-	}
+	int index = 0;
 
 	/**
 	 * 
@@ -91,35 +77,63 @@ public class ManageServiceImpl implements IManageService {
 	 * @Date: 2018年5月17日/上午9:56:17
 	 */
 	private synchronized void scheduledForAll() {
-		if (!scheduleStart) {
-			changeScheduleStart(true);
-			if (scheduleStart) {
-				if(log.isInfoEnabled()){
-					log.info("启动定时取结果线程取数据");
-				}
-				scheduleTakeResult.scheduleAtFixedRate(() -> {
-					if (finalStaticEntryCalculates.size() > 0) {
-						invalidTakeNumber.set(0);
-						List<FinalStaticEntryCalculateDTO> calculateResultDTOs = new ArrayList<>(8000);
-						finalStaticEntryCalculates.drainTo(calculateResultDTOs, 4000);
-						CompletableFuture.runAsync(() -> {
-							sendFinalStaticEntryCalculates(calculateResultDTOs);
-						}, executorService);
-					} else {
-						invalidTakeNumber.incrementAndGet();
-						if (invalidTakeNumber.get() == 30 * 10) {
-							changeScheduleStart(false);
-							if (!scheduleStart) {
-								if(log.isInfoEnabled()){
-									log.info("长时间没有结果信息,定时取结果线程停止取数据");
-								}
-								scheduleTakeResult.shutdown();
+		try {
+			if (!scheduleStart) {
+				this.scheduleStart = true;
+				if (scheduleStart) {
+					if (log.isInfoEnabled()) {
+						log.info("启动定时取结果线程取数据");
+					}
+					scheduleTakeResult.scheduleAtFixedRate(() -> {
+						if (finalStaticEntryCalculates.size() > 0) {
+							invalidTakeNumber.set(0);
+							List<FinalStaticEntryCalculateDTO> calculateResultDTOs = new ArrayList<>(8000);
+							finalStaticEntryCalculates.drainTo(calculateResultDTOs, 4000);
+							CompletableFuture.runAsync(() -> {
+								sendFinalStaticEntryCalculates(calculateResultDTOs);
+							}, executorService);
+						} else {
+							invalidTakeNumber.incrementAndGet();
+							if (invalidTakeNumber.get() == 30 * 10) {
+								scheduleShutdown();
 							}
 						}
-					}
-				}, 100, 100, TimeUnit.MILLISECONDS);
+					}, 100, 100, TimeUnit.MILLISECONDS);
+				}
+			}
+			index = 0;
+		} catch (Exception e) {
+			if (index == 0) {
+				index = 1;
+				scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
+				scheduledForAll();
+			} else {
+				if (log.isErrorEnabled()) {
+					log.error("定时线程启动失败，基金重试");
+				}
 			}
 		}
+	}
+
+	private synchronized void scheduleShutdown() {
+		try {
+			if (scheduleStart) {
+				this.scheduleStart = false;
+				if (!scheduleStart) {
+					if (log.isInfoEnabled()) {
+						log.info("长时间没有结果信息,定时取结果线程停止取数据");
+					}
+					scheduleTakeResult.shutdown();
+					if (log.isInfoEnabled()) {
+						log.info("关闭线程成功");
+					}
+
+				}
+			}
+		} finally {
+			scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
+		}
+
 	}
 
 	@PostConstruct
@@ -137,7 +151,6 @@ public class ManageServiceImpl implements IManageService {
 					}
 					try {
 						finalStaticEntryCalculates.put(finalStaticEntryCalculateDTO);
-						invalidTakeNumber.set(0);
 						if (!scheduleStart) {
 							scheduledForAll();
 						}
@@ -201,4 +214,6 @@ public class ManageServiceImpl implements IManageService {
 		return sendEntryStaticCalculateService.consiseCalculate(finalStaticEntryCalculate);
 	}
 
+	
+	
 }
