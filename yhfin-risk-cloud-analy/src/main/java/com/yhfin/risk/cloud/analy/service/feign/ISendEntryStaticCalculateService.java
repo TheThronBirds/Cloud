@@ -30,29 +30,29 @@ import com.yhfin.risk.core.common.reponse.ServerResponse;
 @FeignClient(value = "risk-calculate", fallbackFactory = SendEntryStaticCalculateServiceHystrix.class)
 @RequestMapping("/yhfin/cloud/calculate")
 public interface ISendEntryStaticCalculateService {
-	/**
-	 * 
-	 * 发送单个条目计算请求给计算服务器
-	 *
-	 *
-	 * @Title consiseCalculate
-	 * @Description: 发送单个条目计算请求给计算服务器
-	 * @author: caohui
-	 * @Date: 2018年5月15日/下午1:20:10
-	 */
-	@RequestMapping(value = "/consiseCalculate", method = RequestMethod.POST, produces = "application/json")
-	public ServerResponse<String> consiseCalculate(@RequestBody FinalStaticEntryCalculateDTO finalStaticEntryCalculate);
-	
-	/**
-	 * 
-	 * 发送多个条目计算请求给计算服务器
-	 *
-	 *
-	 * @Title consiseCalculates
-	 * @Description: 发送多个条目计算请求给计算服务器
-	 * @author: caohui
-	 * @Date: 2018年5月15日/下午1:23:12
-	 */
-	@RequestMapping(value = "/consiseCalculates", method = RequestMethod.POST, produces = "application/json")
-	public ServerResponse<String> consiseCalculates(@RequestBody List<FinalStaticEntryCalculateDTO> finalStaticEntryCalculates);
+    /**
+     * 发送单个条目计算请求给计算服务器
+     *
+     * @param finalStaticEntryCalculate 计算结果信息
+     * @return 接口返回结果
+     * @Title consiseCalculate
+     * @Description: 发送单个条目计算请求给计算服务器
+     * @author: caohui
+     * @Date: 2018年5月15日/下午1:20:10
+     */
+    @RequestMapping(value = "/consiseCalculate", method = RequestMethod.POST, produces = "application/json")
+    public ServerResponse<String> consiseCalculate(@RequestBody FinalStaticEntryCalculateDTO finalStaticEntryCalculate);
+
+    /**
+     * 发送多个条目计算请求给计算服务器
+     *
+     * @param finalStaticEntryCalculates 计算结果信息
+     * @return 接口返回结果
+     * @Title consiseCalculates
+     * @Description: 发送多个条目计算请求给计算服务器
+     * @author: caohui
+     * @Date: 2018年5月15日/下午1:23:12
+     */
+    @RequestMapping(value = "/consiseCalculates", method = RequestMethod.POST, produces = "application/json")
+    public ServerResponse<String> consiseCalculates(@RequestBody List<FinalStaticEntryCalculateDTO> finalStaticEntryCalculates);
 }

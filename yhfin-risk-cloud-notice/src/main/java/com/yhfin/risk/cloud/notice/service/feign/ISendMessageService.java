@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * 创建人：@author caohui
  * 创建时间：2018/5/13/15:33
  */
-@FeignClient(value="risk-bus",fallbackFactory=SendMessageServiceHystrix.class)
+@FeignClient(value = "risk-bus", fallbackFactory = SendMessageServiceHystrix.class)
 @RequestMapping("/yhfin/cloud/bus")
 public interface ISendMessageService {
     /**
@@ -58,7 +58,16 @@ public interface ISendMessageService {
     @RequestMapping(value = "/memoryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
     ServerResponse memoryMessageSynchronizate(@RequestBody MemoryMessageSynchronizateDTO message);
 
-
+    /**
+     * 发送静态计算结束消息
+     *
+     * @param message 结束消息
+     * @return
+     * @Title staticCalculateMessageSynchronizate
+     * @Description: 发送静态计算结束消息
+     * @author: caohui
+     * @Date: 2018/5/21/9:42
+     */
     @RequestMapping(value = "/staticCalculateNotice", method = RequestMethod.POST, produces = "application/json")
     ServerResponse staticCalculateMessageSynchronizate(@RequestBody StaticCalculateNoticeDTO message);
 

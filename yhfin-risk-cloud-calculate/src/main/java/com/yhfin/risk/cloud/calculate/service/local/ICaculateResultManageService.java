@@ -21,15 +21,14 @@ import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateResu
  */
 public interface ICaculateResultManageService {
 
-	/**
-	 * 
-	 * 缓存计算结果信息
-	 *
-	 *
-	 * @Title putFinalStaticEntryCalculateResultDTOs
-	 * @Description: 缓存计算结果信息
-	 * @author: caohui
-	 * @Date: 2018年5月17日/上午10:40:10
-	 */
-	void putFinalStaticEntryCalculateResultDTOs(FinalStaticEntryCalculateResultDTO calculateResultDTO);
+    /**
+     * 缓存计算结果信息
+     *
+     * @param calculateResultDTO 计算结果
+     * @Title putFinalStaticEntryCalculateResultDTOs
+     * @Description: 缓存计算结果信息
+     * @author: caohui
+     * @Date: 2018年5月17日/上午10:40:10
+     */
+    void putFinalStaticEntryCalculateResultDTOs(FinalStaticEntryCalculateResultDTO calculateResultDTO);
 }

@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HanderResultServiceImpl implements IHanderResultService {
 
+	private final Integer STOP_TIME = 300;
 	@Autowired
 	private ISendMessageService messageService;
 	private Connection connection;
@@ -131,7 +132,7 @@ public class HanderResultServiceImpl implements IHanderResultService {
 							}, executorService);
 						} else {
 							invalidTakeNumber.incrementAndGet();
-							if (invalidTakeNumber.get() == 30 * 10) {
+							if (invalidTakeNumber.get() == STOP_TIME) {
 								scheduleShutdown();
 							}
 						}

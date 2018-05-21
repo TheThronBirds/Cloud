@@ -37,7 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 计算结果处理服务 包名称：com.yhfin.risk.cloud.calculate.service.local.impl
- * 类名称：CaculateResultManageServiceImpl 类描述：计算结果处理服务 创建人：@author caohui
+ * 类名称：CaculateResultManageServiceImpl
+ * 类描述：计算结果处理服务
+ * 创建人：@author caohui
  * 创建时间：2018/5/13/12:20
  */
 @Service
@@ -47,6 +49,8 @@ public class CaculateResultManageServiceImpl implements ICaculateResultManageSer
 	@Autowired
 	private ISendCalculateResultService sendCalculateResultService;
 
+
+	private final Integer STOP_TIME = 300;
 	/**
 	 * 定时线程去队列中拿取数据，失败次数
 	 */
@@ -88,7 +92,7 @@ public class CaculateResultManageServiceImpl implements ICaculateResultManageSer
 							}, executorService);
 						} else {
 							invalidTakeNumber.incrementAndGet();
-							if (invalidTakeNumber.get() == 30 * 10) {
+							if (invalidTakeNumber.get() == STOP_TIME) {
 								scheduleShutdown();
 							}
 						}

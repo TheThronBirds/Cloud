@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 @Slf4j
 public class ManageServiceImpl implements IManageService {
-
+	private final Integer STOP_TIME = 300;
 	private ExecutorService executorService = new ThreadPoolExecutor(3, Runtime.getRuntime().availableProcessors() * 2,
 			0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(512), new ThreadPoolExecutor.AbortPolicy());
 
@@ -94,7 +94,7 @@ public class ManageServiceImpl implements IManageService {
 							}, executorService);
 						} else {
 							invalidTakeNumber.incrementAndGet();
-							if (invalidTakeNumber.get() == 30 * 10) {
+							if (invalidTakeNumber.get() == STOP_TIME) {
 								scheduleShutdown();
 							}
 						}

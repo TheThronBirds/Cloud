@@ -31,35 +31,31 @@ import java.util.List;
 @RequestMapping("/yhfin/cloud/result")
 public interface ISendCalculateResultService {
 
-	/**
-	 * 发送计算结果给结果处理服务器
-	 *
-	 * @param finalStaticEntryCalculateResult
-	 *            计算
-	 * @return
-	 * @throws @Title
-	 *             sendFinalStaticCalculateResult
-	 * @Description: 发送计算结果给结果处理服务器
-	 * @author: caohui
-	 * @Date: 2018/5/14/0:35
-	 */
-	@RequestMapping(value = "/handerResult", method = RequestMethod.POST, produces = "application/json")
-	public ServerResponse sendFinalStaticCalculateResult(
-			@RequestBody FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult);
+    /**
+     * 发送计算结果给结果处理服务器
+     *
+     * @param finalStaticEntryCalculateResult 计算
+     * @return
+     * @throws @Title sendFinalStaticCalculateResult
+     * @Description: 发送计算结果给结果处理服务器
+     * @author: caohui
+     * @Date: 2018/5/14/0:35
+     */
+    @RequestMapping(value = "/handerResult", method = RequestMethod.POST, produces = "application/json")
+    public ServerResponse sendFinalStaticCalculateResult(
+            @RequestBody FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult);
 
-	/**
-	 * 发送计算结果给结果处理服务器
-	 *
-	 * @param finalStaticEntryCalculateResult
-	 *            计算
-	 * @return
-	 * @throws @Title
-	 *             sendFinalStaticCalculateResult
-	 * @Description: 发送计算结果给结果处理服务器
-	 * @author: caohui
-	 * @Date: 2018/5/14/0:35
-	 */
-	@RequestMapping(value = "/handerResults", method = RequestMethod.POST, produces = "application/json")
-	public ServerResponse sendFinalStaticCalculateResults(
-			@RequestBody List<FinalStaticEntryCalculateResultDTO> finalStaticEntryCalculateResults);
+    /**
+     * 发送计算结果给结果处理服务器
+     *
+     * @param finalStaticEntryCalculateResults 计算结果
+     * @return
+     * @throws @Title sendFinalStaticCalculateResult
+     * @Description: 发送计算结果给结果处理服务器
+     * @author: caohui
+     * @Date: 2018/5/14/0:35
+     */
+    @RequestMapping(value = "/handerResults", method = RequestMethod.POST, produces = "application/json")
+    public ServerResponse sendFinalStaticCalculateResults(
+            @RequestBody List<FinalStaticEntryCalculateResultDTO> finalStaticEntryCalculateResults);
 }
