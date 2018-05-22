@@ -12,11 +12,10 @@
  ********************************************************/
 package com.yhfin.risk.cloud.notice.service.local;
 
-import java.util.List;
 
 import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
-import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateFinalDTO;
-import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO;
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticAllFundCalculateResultDTO;
+import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 
 /**
@@ -27,63 +26,81 @@ import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 
 public interface IStaticCalculateManageService {
 
-    /**
-     * 初始化静态计算请求
-     *
-     * @param staticSingleFundCalculateRequests 计算分析结果
-     * @param requestId                         请求序号
-     * @param serialNumber                      流水号
-     * @Title initStaticManage
-     * @Description: 初始化静态计算请求
-     * @author: caohui
-     * @Date: 2018/5/13/22:47
-     */
-    void initStaticManage(List<StaticSingleFundCalculateDTO> staticSingleFundCalculateRequests, String requestId,
-                          String serialNumber);
+	/**
+	 * 处理分析消息
+	 *
+	 * @param message
+	 *            消息
+	 * @Title hander
+	 * @Description: 处理分析消息
+	 * @author: caohui
+	 * @Date: 2018/5/13/23:20
+	 */
+	void handerResultHandleResult(ResultHandleResultDTO message);
 
-    /**
-     * 处理分析消息
-     *
-     * @param message 消息
-     * @Title hander
-     * @Description: 处理分析消息
-     * @author: caohui
-     * @Date: 2018/5/13/23:20
-     */
-    void hander(ResultHandleResultDTO message);
+	/**
+	 * 处理结果消息
+	 *
+	 * @param message
+	 *            消息
+	 * @Title hander
+	 * @Description: 处理结果消息
+	 * @author: caohui
+	 * @Date: 2018/5/13/23:20
+	 */
+	void handerSingleFundAnalyResult(SingleFundAnalyResultDTO message);
 
-    /**
-     * 处理结果消息
-     *
-     * @param message 消息
-     * @Title hander
-     * @Description: 处理结果消息
-     * @author: caohui
-     * @Date: 2018/5/13/23:20
-     */
-    void hander(SingleFundAnalyResultDTO message);
+	/**
+	 * 
+	 * 接收到静态请求计算
+	 *
+	 *
+	 * @Title handerStaticCalculate
+	 * @Description: 接收到静态请求计算
+	 * @author: caohui
+	 * @Date: 2018年5月21日/下午1:41:11
+	 */
+	void handerStaticCalculate(StaticCalculateDTO calculate);
 
-    /**
-     * 更新基金发送状态是否成功
-     *
-     * @param fundId       基金序号
-     * @param sendValid    是否发送成功
-     * @param requestId    请求序号
-     * @param serialNumber 流水号
-     * @Title hander
-     * @Description: 更新基金发送状态是否成功
-     * @author: caohui
-     * @Date: 2018年5月14日/下午5:01:15
-     */
-    void hander(String fundId, boolean sendValid, String requestId, String serialNumber);
+	/**
+	 * 
+	 * 查看当前是否在计算
+	 *
+	 *
+	 * @Title getCalculateProcess
+	 * @Description: 查看当前是否在计算
+	 * @author: caohui
+	 * @Date: 2018年5月21日/下午1:49:11
+	 */
+	boolean getCalculateProcess();
 
-    /**
-     * 初始化通知通信状态
-     *
-     * @Title initNoticeState
-     * @Description: 初始化通知通信状态
-     * @author: caohui
-     * @Date: 2018年5月14日/下午5:43:49
-     */
-    void initNoticeState();
+	/**
+	 * 查看当前计算版本号
+	 *
+	 * @Title getCurrentSerialNumber
+	 * @Description: 查看当前计算版本号
+	 * @author: caohui
+	 * @Date: 2018年5月21日/下午1:49:25
+	 */
+	String getCurrentSerialNumber();
+	/**
+	 * 
+	 * 强制停止当前计算
+	 *
+	 * @Title forceFinishStaticCalculate
+	 * @Description: 强制停止当前计算
+	 * @author: caohui
+	 * @Date: 2018年5月21日/下午3:16:23
+	 */
+	void forceFinishStaticCalculate();
+	
+	/**
+	 * 获取静态计算状态信息
+	 *
+	 * @Title getStaticAllFundCalculateResult
+	 * @Description: 获取静态计算状态信息
+	 * @author: caohui
+	 * @Date: 2018年5月22日/下午12:31:17
+	 */
+	StaticAllFundCalculateResultDTO getStaticAllFundCalculateResult();
 }

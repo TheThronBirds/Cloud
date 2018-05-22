@@ -69,12 +69,11 @@ public class HanderResultServiceImpl implements IHanderResultService {
 	private String username;
 	@Value("${yhfin.data.risk.password}")
 	private String password;
-
 	{
 		this.finalStaticEntryCalculateResultDTOs = new LinkedBlockingDeque<>(20000000);
 	}
-
-	int index = 0;
+	private int index = 0;
+	private String currentSerialNumber;
 
 	@PostConstruct
 	private void init() {
@@ -185,17 +184,37 @@ public class HanderResultServiceImpl implements IHanderResultService {
 	 * @Date: 2018/5/14/0:06
 	 */
 	@Override
-	public void handerResults(List<FinalStaticEntryCalculateResultDTO> calculateResultDTOList) {
+	public synchronized void handerResults(List<FinalStaticEntryCalculateResultDTO> calculateResultDTOList) {
 		if (calculateResultDTOList != null && !calculateResultDTOList.isEmpty()) {
-			if (!scheduleStart) {
-				scheduledForAll();
+			String serialNumber = calculateResultDTOList.get(0).getSerialNumber();
+			if (StringUtils.isBlank(this.currentSerialNumber)) {
+				this.currentSerialNumber = serialNumber;
+				deleteTableData();
+				if (!scheduleStart) {
+					scheduledForAll();
+				}
+				finalStaticEntryCalculateResultDTOs.addAll(calculateResultDTOList);
+			} else {
+				if (StringUtils.equals(this.currentSerialNumber, serialNumber)) {
+					if (!scheduleStart) {
+						scheduledForAll();
+					}
+					finalStaticEntryCalculateResultDTOs.addAll(calculateResultDTOList);
+				} else {
+					if (Integer.valueOf(this.currentSerialNumber).compareTo(Integer.valueOf(serialNumber)) < 0) {
+						this.currentSerialNumber = serialNumber;
+						deleteTableData();
+						finalStaticEntryCalculateResultDTOs.clear();
+						finalStaticEntryCalculateResultDTOs.addAll(calculateResultDTOList);
+					}
+				}
 			}
-			finalStaticEntryCalculateResultDTOs.addAll(calculateResultDTOList);
+
 		}
 	}
 
 	@Override
-	public void handerResult(FinalStaticEntryCalculateResultDTO calculateResult) {
+	public synchronized void handerResult(FinalStaticEntryCalculateResultDTO calculateResult) {
 		if (calculateResult != null) {
 			try {
 				if (log.isInfoEnabled()) {
@@ -203,16 +222,69 @@ public class HanderResultServiceImpl implements IHanderResultService {
 							StringUtil.commonLogStart(calculateResult.getSerialNumber(), calculateResult.getRequestId())
 									+ ",缓存一条计算结果信息");
 				}
-				if (!scheduleStart) {
-					scheduledForAll();
+				if (StringUtils.isBlank(this.currentSerialNumber)) {
+					this.currentSerialNumber = calculateResult.getSerialNumber();
+					deleteTableData();
+					if (!scheduleStart) {
+						scheduledForAll();
+					}
+					finalStaticEntryCalculateResultDTOs.put(calculateResult);
+				} else {
+					if (StringUtils.equals(this.currentSerialNumber, calculateResult.getSerialNumber())) {
+						this.currentSerialNumber = calculateResult.getSerialNumber();
+						if (!scheduleStart) {
+							scheduledForAll();
+						}
+						finalStaticEntryCalculateResultDTOs.put(calculateResult);
+					} else {
+						if (Integer.valueOf(this.currentSerialNumber)
+								.compareTo(Integer.valueOf(calculateResult.getSerialNumber())) < 0) {
+							deleteTableData();
+							this.currentSerialNumber = calculateResult.getSerialNumber();
+							if (!scheduleStart) {
+								scheduledForAll();
+							}
+							finalStaticEntryCalculateResultDTOs.clear();
+							finalStaticEntryCalculateResultDTOs.put(calculateResult);
+						}
+					}
 				}
-				finalStaticEntryCalculateResultDTOs.put(calculateResult);
 			} catch (InterruptedException e) {
 				if (log.isErrorEnabled()) {
 					log.error(
 							StringUtil.commonLogStart(calculateResult.getSerialNumber(), calculateResult.getRequestId())
 									+ ",存放计算结果到范围中,发生错误");
 					log.error("错误:", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 删除静态结果表数据
+	 *
+	 * @Title deleteTableData
+	 * @Description: 删除静态结果表数据
+	 * @author: caohui
+	 * @Date: 2018年5月22日/下午1:43:48
+	 */
+	private void deleteTableData() {
+		PreparedStatement prepareStatement = null;
+		try {
+			prepareStatement = this.connection.prepareStatement("TRUNCATE TABLE RISKRESULT_STATIC");
+			prepareStatement.execute();
+		} catch (SQLException e) {
+			if (log.isErrorEnabled()) {
+				log.error("删除静态数据库结果表数据出错", e);
+			}
+		} finally {
+			if (prepareStatement != null) {
+				try {
+					prepareStatement.close();
+				} catch (SQLException e) {
+					if (log.isErrorEnabled()) {
+						log.error("删除静态数据库结果表数据出错,关闭prepareStatement出错", e);
+					}
 				}
 			}
 		}
@@ -240,7 +312,7 @@ public class HanderResultServiceImpl implements IHanderResultService {
 			StructDescriptor recDesc = StructDescriptor.createDescriptor("RISKRESULT_STATIC_BASE_OBJ", this.connection);
 			ArrayList<STRUCT> pstruct = new ArrayList<STRUCT>();
 			for (FinalStaticEntryCalculateResultDTO result : calculateResults) {
-				Object[] objs = new Object[15];
+				Object[] objs = new Object[16];
 				objs[0] = result.getResultId();
 				objs[1] = Integer.valueOf(result.getRiskId());
 				objs[2] = result.getRiskDescription();
@@ -256,6 +328,7 @@ public class HanderResultServiceImpl implements IHanderResultService {
 				objs[12] = result.getEnResultValue();
 				objs[13] = result.getVcFzValue();
 				objs[14] = result.getVcFmValue();
+				objs[15] = result.getSerialNumber();
 				STRUCT struct = new STRUCT(recDesc, this.connection, objs);
 				pstruct.add(struct);
 			}

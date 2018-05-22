@@ -56,7 +56,7 @@ public class ReceiveMessageImpl implements IReceiveMessage {
             log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",收到消息服务器，分析基金结果消息,{}",  JSON.toJSONString(message));
         }
         CompletableFuture.runAsync(()->{
-            manageService.hander(message);
+            manageService.handerSingleFundAnalyResult(message);
         });
     }
 
@@ -76,7 +76,7 @@ public class ReceiveMessageImpl implements IReceiveMessage {
             log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",收到消息服务器，计算基金结果处理消息,{}", JSON.toJSONString(message));
         }
         CompletableFuture.runAsync(()->{
-            manageService.hander(message);
+            manageService.handerResultHandleResult(message);
         });
     }
 

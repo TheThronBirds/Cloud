@@ -14,12 +14,15 @@ package com.yhfin.risk.cloud.analy.service.local.impl;
 
 import com.yhfin.risk.cloud.analy.service.feign.ISendEntryStaticCalculateService;
 import com.yhfin.risk.cloud.analy.service.local.IManageService;
+import com.yhfin.risk.cloud.analy.service.local.IOverallManagerService;
 import com.yhfin.risk.core.analy.optimize.IEntryStaticAnalyService;
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
 import com.yhfin.risk.core.common.utils.StringUtil;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
@@ -44,11 +47,12 @@ public class ManageServiceImpl implements IManageService {
 
 	private ScheduledExecutorService scheduleTakeResult = Executors.newSingleThreadScheduledExecutor();
 
+	@Autowired
+	private IOverallManagerService overallManagerService;
 	/**
 	 * 定时线程去队列中拿取数据，失败次数
 	 */
 	private AtomicInteger invalidTakeNumber = new AtomicInteger();
-
 	/**
 	 * 定时线程是否启动标识
 	 */
@@ -58,10 +62,8 @@ public class ManageServiceImpl implements IManageService {
 	{
 		this.finalStaticEntryCalculates = new LinkedBlockingDeque<>(20000000);
 	}
-
 	@Autowired
 	private IEntryStaticAnalyService entryStaticAnalyService;
-
 	@Autowired
 	private ISendEntryStaticCalculateService sendEntryStaticCalculateService;
 	int index = 0;
@@ -127,7 +129,6 @@ public class ManageServiceImpl implements IManageService {
 					if (log.isInfoEnabled()) {
 						log.info("关闭线程成功");
 					}
-
 				}
 			}
 		} finally {
@@ -143,16 +144,21 @@ public class ManageServiceImpl implements IManageService {
 				FinalStaticEntryCalculateDTO finalStaticEntryCalculateDTO = entryStaticAnalyService
 						.finalStaticEntryCalculateTake();
 				if (finalStaticEntryCalculateDTO != null) {
-					if (log.isInfoEnabled()) {
-						log.info(StringUtil.commonLogStart(
-								finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getSerialNumber(),
-								finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getRequestId()
-										+ ",把计算数据发送给计算服务"));
-					}
 					try {
-						finalStaticEntryCalculates.put(finalStaticEntryCalculateDTO);
-						if (!scheduleStart) {
-							scheduledForAll();
+						if (StringUtils.equals(
+								finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getSerialNumber(),
+								overallManagerService.getCurrentSerialNumber())) {
+							if (log.isInfoEnabled()) {
+								log.info(StringUtil.commonLogStart(
+										finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult()
+												.getSerialNumber(),
+										finalStaticEntryCalculateDTO.getFinalStaticEntryCalculateResult().getRequestId()
+												+ ",把计算数据发送给计算服务"));
+							}
+							finalStaticEntryCalculates.put(finalStaticEntryCalculateDTO);
+							if (!scheduleStart) {
+								scheduledForAll();
+							}
 						}
 					} catch (InterruptedException e) {
 						if (log.isErrorEnabled()) {
@@ -214,6 +220,4 @@ public class ManageServiceImpl implements IManageService {
 		return sendEntryStaticCalculateService.consiseCalculate(finalStaticEntryCalculate);
 	}
 
-	
-	
 }

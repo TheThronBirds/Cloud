@@ -158,4 +158,10 @@ public class CaculateResultManageServiceImpl implements ICaculateResultManageSer
 		}
 	}
 
+	@Override
+	public BlockingDeque<?> getBlockingDeque() {
+		
+		return finalStaticEntryCalculateResultDTOs;
+	}
+
 }

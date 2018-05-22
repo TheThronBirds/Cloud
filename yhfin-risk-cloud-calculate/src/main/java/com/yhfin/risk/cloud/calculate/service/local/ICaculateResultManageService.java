@@ -12,6 +12,8 @@
  ********************************************************/
 package com.yhfin.risk.cloud.calculate.service.local;
 
+import java.util.concurrent.BlockingDeque;
+
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateResultDTO;
 
 /**
@@ -31,4 +33,14 @@ public interface ICaculateResultManageService {
      * @Date: 2018年5月17日/上午10:40:10
      */
     void putFinalStaticEntryCalculateResultDTOs(FinalStaticEntryCalculateResultDTO calculateResultDTO);
+    
+    /**
+     * 获取缓存计算结果队列
+     *
+     * @Title getBlockingDeque
+     * @Description: 获取缓存计算结果队列
+     * @author: caohui
+     * @Date: 2018年5月22日/上午10:45:09
+     */
+    BlockingDeque<?> getBlockingDeque();
 }

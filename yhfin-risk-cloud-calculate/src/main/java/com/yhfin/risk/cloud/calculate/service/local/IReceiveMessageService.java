@@ -12,6 +12,9 @@
  ********************************************************/
 package com.yhfin.risk.cloud.calculate.service.local;
 
+import java.util.List;
+
+import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 
 /**
@@ -35,5 +38,8 @@ public interface IReceiveMessageService {
      * @Date: 2018/5/11/15:44
      */
     void memorySynchronizateByMessage(MemoryMessageSynchronizateDTO message);
+    
+    
+   
 
 }
