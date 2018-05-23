@@ -27,7 +27,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.netflix.discovery.converters.Auto;
 import com.yhfin.risk.cloud.notice.service.local.IOverallManagerService;
 import com.yhfin.risk.cloud.notice.service.local.IStaticCalculateManageService;
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateDTO;
@@ -128,12 +127,14 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 			if (log.isInfoEnabled()) {
 				log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理同步条目消息");
 			}
-			if (message.getSynchronizateAll() != null && message.getSynchronizateAll()) {
-				buildSqlService.entryBuildSqlAll();
-			} else {
-				List<String> updateRiskIds = message.getUpdateRiskIds();
-				if (updateRiskIds != null && !updateRiskIds.isEmpty()) {
-					buildSqlService.entryBuildSqls(updateRiskIds.toArray(new String[updateRiskIds.size()]));
+			if (message.getBuildSql() != null && message.getBuildSql()) {
+				if (message.getSynchronizateAll() != null && message.getSynchronizateAll()) {
+					buildSqlService.entryBuildSqlAll();
+				} else {
+					List<String> updateRiskIds = message.getUpdateRiskIds();
+					if (updateRiskIds != null && !updateRiskIds.isEmpty()) {
+						buildSqlService.entryBuildSqls(updateRiskIds.toArray(new String[updateRiskIds.size()]));
+					}
 				}
 			}
 			List<ServiceInstance> instances = client.getInstances("RISK-ANALY");
@@ -141,6 +142,12 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 				for (ServiceInstance instance : instances) {
 					String host = instance.getHost();
 					int port = instance.getPort();
+					if (log.isInfoEnabled()) {
+						log.info(
+								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
+										+ ",开始轮询发送同步条目消息,发送地址:{}",
+								"http://" + host + ":" + port + "/yhfin/cloud/analy/memorySynchronizate");
+					}
 					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analy/entrySynchronizate",
 							message, ServerResponse.class);
 				}
@@ -181,6 +188,12 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 				for (ServiceInstance instance : analyInstances) {
 					String host = instance.getHost();
 					int port = instance.getPort();
+					if (log.isInfoEnabled()) {
+						log.info(
+								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
+										+ ",开始轮询发送同步内存消息,发送地址:{}",
+								"http://" + host + ":" + port + "/yhfin/cloud/analy/memorySynchronizate");
+					}
 					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analy/memorySynchronizate",
 							message, ServerResponse.class);
 				}
@@ -190,6 +203,12 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 				for (ServiceInstance instance : calculateInstances) {
 					String host = instance.getHost();
 					int port = instance.getPort();
+					if (log.isInfoEnabled()) {
+						log.info(
+								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
+										+ ",开始轮询发送同步内存消息,发送地址:{}",
+								"http://" + host + ":" + port + "/yhfin/cloud/calculate/memorySynchronizate");
+					}
 					restTemplate.postForObject(
 							"http://" + host + ":" + port + "/yhfin/cloud/calculate/memorySynchronizate", message,
 							ServerResponse.class);

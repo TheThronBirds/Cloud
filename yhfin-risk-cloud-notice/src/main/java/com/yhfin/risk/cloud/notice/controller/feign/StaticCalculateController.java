@@ -69,10 +69,11 @@ public class StaticCalculateController {
 
 		String requestId = staticCalculate.getRequestId();
 		String serialNumber = requestSupplyService.supplySerialNumber();
-		staticCalculate.setSerialNumber(serialNumber);
 		if (StringUtils.isBlank(requestId)) {
 			requestId = requestSupplyService.supplyRequestId();
 		}
+		staticCalculate.setSerialNumber(serialNumber);
+		staticCalculate.setRequestId(requestId);
 		if (calculateManageService.getCalculateProcess()) {
 			return ServerResponse.createByError(requestId, serialNumber, Const.ExceptionErrorCode.NOTICE_ERROR_CODE,
 					"引擎正处于计算中,不接受计算请求");

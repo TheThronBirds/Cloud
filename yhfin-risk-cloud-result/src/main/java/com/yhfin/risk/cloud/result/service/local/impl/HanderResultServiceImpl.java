@@ -205,6 +205,9 @@ public class HanderResultServiceImpl implements IHanderResultService {
 						this.currentSerialNumber = serialNumber;
 						deleteTableData();
 						finalStaticEntryCalculateResultDTOs.clear();
+						if (!scheduleStart) {
+							scheduledForAll();
+						}
 						finalStaticEntryCalculateResultDTOs.addAll(calculateResultDTOList);
 					}
 				}
@@ -269,14 +272,41 @@ public class HanderResultServiceImpl implements IHanderResultService {
 	 * @Date: 2018年5月22日/下午1:43:48
 	 */
 	private void deleteTableData() {
+		PreparedStatement simplePrepareStatement = null;
+		try {
+			simplePrepareStatement = this.connection.prepareStatement("SELECT 1 FROM DUAL");
+			simplePrepareStatement.execute();
+		} catch (Exception e) {
+			if (log.isErrorEnabled()) {
+				log.error("测试数据库连接出错", e);
+			}
+			if (log.isInfoEnabled()) {
+				log.info("重新建立连接");
+			}
+			initConnection();
+		}finally {
+			if (simplePrepareStatement != null) {
+				try {
+					simplePrepareStatement.close();
+				} catch (SQLException e) {
+					if (log.isErrorEnabled()) {
+						log.error("测试数据库连接,关闭simplePrepareStatement出错", e);
+					}
+				}
+			}
+		}
 		PreparedStatement prepareStatement = null;
 		try {
+			if (log.isInfoEnabled()) {
+				log.info("删除静态结果表数据");
+			}
 			prepareStatement = this.connection.prepareStatement("TRUNCATE TABLE RISKRESULT_STATIC");
 			prepareStatement.execute();
 		} catch (SQLException e) {
 			if (log.isErrorEnabled()) {
 				log.error("删除静态数据库结果表数据出错", e);
 			}
+
 		} finally {
 			if (prepareStatement != null) {
 				try {
