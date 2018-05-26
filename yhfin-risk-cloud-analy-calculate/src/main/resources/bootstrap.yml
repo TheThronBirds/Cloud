@@ -10,7 +10,7 @@ feign:
 
 spring:
   application:
-    name: risk-notice-calculate
+    name: risk-analy-calculate
   cloud:
     config:
       retry:
