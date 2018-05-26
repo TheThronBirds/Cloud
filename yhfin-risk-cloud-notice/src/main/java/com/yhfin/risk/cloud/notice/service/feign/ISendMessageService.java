@@ -12,7 +12,6 @@
  ********************************************************/
 package com.yhfin.risk.cloud.notice.service.feign;
 
-import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
@@ -57,19 +56,6 @@ public interface ISendMessageService {
      */
     @RequestMapping(value = "/memoryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
     ServerResponse memoryMessageSynchronizate(@RequestBody MemoryMessageSynchronizateDTO message);
-
-    /**
-     * 发送静态计算结束消息
-     *
-     * @param message 结束消息
-     * @return
-     * @Title staticCalculateMessageSynchronizate
-     * @Description: 发送静态计算结束消息
-     * @author: caohui
-     * @Date: 2018/5/21/9:42
-     */
-    @RequestMapping(value = "/staticCalculateNotice", method = RequestMethod.POST, produces = "application/json")
-    ServerResponse staticCalculateMessageSynchronizate(@RequestBody StaticCalculateNoticeDTO message);
 
 
 }

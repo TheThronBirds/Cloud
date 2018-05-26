@@ -50,30 +50,6 @@ public interface OutputChannels {
     MessageChannel analy();
 
     /**
-     * 发布分析信息
-     *
-     * @return
-     */
-    @Output("risk")
-    MessageChannel risk();
-
-    /**
-     * 发布计算信息
-     *
-     * @return
-     */
-    @Output("calculate")
-    MessageChannel calculate();
-
-    /**
-     * 发布查询计算进度信息
-     *
-     * @return
-     */
-    @Output("queryCalculate")
-    MessageChannel queryCalculate();
-
-    /**
      * 发布计算信息
      *
      * @return
@@ -81,12 +57,6 @@ public interface OutputChannels {
     @Output("result")
     MessageChannel result();
     
-    /**
-     * 发布计算信息
-     *
-     * @return
-     */
-    @Output("notice")
-    MessageChannel notice();
+
 
 }

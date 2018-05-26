@@ -1,7 +1,9 @@
 yhfin:
   common:
-    config: risk,swagger
-  data: 
+    config: risk,memory,swagger
+  data:
+    #数据源实例注入 配置
+    config: risk,redis,memory
     #内存数据库配置
     memory:
       #通过kettle同步内存数据配置
@@ -13,7 +15,7 @@ yhfin:
         #执行kettle文件的job对应的仓库
         reposity:
         #执行kettle文件的job对应的仓库的文件夹路径
-         path: F:/kettle 
+         path: F:/kettle
       #内存数据源名称
       dataSourceName: memoryDataSource
       #内存数据源jdbc操作实例名称
@@ -23,7 +25,7 @@ yhfin:
       #内存数据源web登录用户名
       username: sa
       #内存数据源web登录用户名对应的密码
-      password: 
+      password:
       #内存数据库驱动类型
       driverClassName: org.h2.Driver
       #内存数据源 生命式数据源 事物实例名称
@@ -46,18 +48,6 @@ yhfin:
       transactionManager: RisktransactionManager
 
 
-risk-analy-calculate:
-  ribbon:
-    #请求连接时间
-    ConnectTimeout: 250
-    #请求处理的超时时间
-    ReadTimeout: 2000
-    #多所有操作请求都进行重试
-    OkToRetryOnAllOperations: true
-    #切换实例重试次数
-    MaxAutoRetriesNextServer: 2
-    #对当前实例的重试次数
-    MaxAutoRetries: 1
 risk-bus:
   ribbon:
     #请求连接时间
@@ -78,10 +68,8 @@ hystrix:
         isolation:
           thread:
             #hystrix默认熔断时间
-            timeoutInMilliseconds: 30000
+            timeoutInMilliseconds: 8000
 
-server:
-  port: 9004
 spring:
   #消息中间件rabbitmq配置
   rabbitmq:
@@ -101,6 +89,9 @@ spring:
         analy:
            destination: analy-channel
            contentType: application/json
+        result:
+          destination: result-channel
+          contentType: application/json
         notice:
           destination: notice-channel
           contentType: application/json
@@ -108,7 +99,27 @@ spring:
       retry:
         #重试机制开启
         enabled: true
+  #redis集群配置
+  redis:
+    cluster:
+      #redis集群节点配置
+      nodes:
+        - 192.168.74.226:7001
+        - 192.168.74.226:7002
+        - 192.168.74.226:7003
+        - 192.168.74.226:7004
+        - 192.168.74.226:7005
+        - 192.168.74.226:7006
+  #h2数据库配置
+  h2:
+    console:
+      #h2数据库是否可以允许web端查看
+      enabled: true
+      settings:
+       #h2数据库是否可以允许所有ip端web端查看
+        web-allow-others: true
 
 feign:
   hystrix:
     enabled: true
+

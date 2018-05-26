@@ -18,7 +18,6 @@ import com.yhfin.risk.core.common.consts.Const;
 import com.yhfin.risk.core.common.pojos.dtos.AbstractMessageDTO;
 import com.yhfin.risk.core.common.pojos.dtos.MessageResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
-import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateNoticeDTO;
 import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
@@ -55,11 +54,6 @@ public class MessageController {
 		return outMessage(message, ChannelTypeEnum.ENTRY);
 	}
 
-	@RequestMapping(value = "/staticCalculateNotice", method = RequestMethod.POST, produces = "application/json")
-	ServerResponse<MessageResultDTO> staticCalculateMessageSynchronizate(
-			@RequestBody StaticCalculateNoticeDTO message) {
-		return outMessage(message, ChannelTypeEnum.NOTICE);
-	}
 
 	/**
 	 * 发送分析结果信息

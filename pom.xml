@@ -11,10 +11,8 @@
         <module>yhfin-risk-cloud-register</module>
         <module>yhfin-risk-cloud-config</module>
         <module>yhfin-risk-cloud-notice</module>
-        <module>yhfin-risk-cloud-analy</module>
-        <module>yhfin-risk-cloud-calculate</module>
         <module>yhfin-risk-cloud-bus</module>
-        <module>yhfin-risk-cloud-result</module>
+        <module>yhfin-risk-cloud-analy-calculate</module>
     </modules>
     <packaging>pom</packaging>
 

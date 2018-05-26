@@ -137,7 +137,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 					}
 				}
 			}
-			List<ServiceInstance> instances = client.getInstances("RISK-ANALY");
+			List<ServiceInstance> instances = client.getInstances("RISK-ANALY-CALCULATE");
 			if (instances != null && !instances.isEmpty()) {
 				for (ServiceInstance instance : instances) {
 					String host = instance.getHost();
@@ -176,13 +176,9 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 			if (log.isInfoEnabled()) {
 				log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理同步内存消息");
 			}
-			List<ServiceInstance> analyInstances = client.getInstances("RISK-ANALY");
-			List<ServiceInstance> calculateInstances = client.getInstances("RISK-CALCULATE");
+			List<ServiceInstance> analyInstances = client.getInstances("RISK-ANALY-CALCULATE");
 			if (analyInstances == null) {
 				analyInstances = new ArrayList<>(10);
-			}
-			if (calculateInstances == null) {
-				calculateInstances = new ArrayList<>(10);
 			}
 			if (analyInstances != null && !analyInstances.isEmpty()) {
 				for (ServiceInstance instance : analyInstances) {
@@ -199,21 +195,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 				}
 			}
 
-			if (calculateInstances != null && !calculateInstances.isEmpty()) {
-				for (ServiceInstance instance : calculateInstances) {
-					String host = instance.getHost();
-					int port = instance.getPort();
-					if (log.isInfoEnabled()) {
-						log.info(
-								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
-										+ ",开始轮询发送同步内存消息,发送地址:{}",
-								"http://" + host + ":" + port + "/yhfin/cloud/calculate/memorySynchronizate");
-					}
-					restTemplate.postForObject(
-							"http://" + host + ":" + port + "/yhfin/cloud/calculate/memorySynchronizate", message,
-							ServerResponse.class);
-				}
-			}
+
 		} catch (Exception e) {
 			if (log.isErrorEnabled()) {
 				log.error(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",同步内存消息处理失败",

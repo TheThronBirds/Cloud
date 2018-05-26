@@ -16,15 +16,6 @@ spring:
         analy:
            destination: analy-channel
            contentType: application/json
-        calculate:
-          destination: calculate-channel
-          contentType: application/json
-        risk:
-          destination: risk-channel
-          contentType: application/json
-        queryCalculate:
-          destination: queryCalculate-channel
-          contentType: application/json
         result:
           destination: result-channel
           contentType: application/json

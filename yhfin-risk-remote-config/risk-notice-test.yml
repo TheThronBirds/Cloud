@@ -45,8 +45,7 @@ yhfin:
       #风控数据源 生命式数据源 事物实例名称
       transactionManager: RisktransactionManager
 
-
-risk-analy:
+risk-analy-calculate:
   ribbon:
     #请求连接时间
     ConnectTimeout: 250
@@ -100,18 +99,6 @@ spring:
         analy:
            destination: analy-channel
            contentType: application/json
-        calculate:
-          destination: calculate-channel
-          contentType: application/json
-        risk:
-          destination: risk-channel
-          contentType: application/json
-        result:
-          destination: result-channel
-          contentType: application/json
-        queryCalculate:
-          destination: queryCalculate-channel
-          contentType: application/json
         notice:
           destination: notice-channel
           contentType: application/json
@@ -119,17 +106,7 @@ spring:
       retry:
         #重试机制开启
         enabled: true
-  #redis集群配置
-  redis:
-    cluster:
-      #redis集群节点配置
-      nodes:
-        - 192.168.100.100:7001
-        - 192.168.100.100:7002
-        - 192.168.100.100:7003
-        - 192.168.100.100:7004
-        - 192.168.100.100:7005
-        - 192.168.100.100:7006
+
 feign:
   hystrix:
     enabled: true
