@@ -92,9 +92,7 @@ spring:
         result:
           destination: result-channel
           contentType: application/json
-        notice:
-          destination: notice-channel
-          contentType: application/json
+
     loadbalancer:
       retry:
         #重试机制开启
