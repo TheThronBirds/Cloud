@@ -10,10 +10,10 @@
  * @Copyright:2016-2018
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate.controller.feign;
+package com.yhfin.risk.cloud.analy.calculate.controller.feign;
 
 import com.alibaba.fastjson.JSON;
-import com.yhfin.cloud.analy.calculate.service.local.IOverallManagerService;
+import com.yhfin.risk.cloud.analy.calculate.service.local.IOverallManagerService;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.reponse.ServerResponse;
 import com.yhfin.risk.core.common.utils.StringUtil;
@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * 接收条目同步请求
- * 包名称：com.yhfin.cloud.analy.calculate.controller.feign
+ * 包名称：com.yhfin.risk.cloud.analy.calculate.controller.feign
  * 类名称：EntrySynchronizateController
  * 类描述：接收条目同步请求
  * 创建人：@author caohui

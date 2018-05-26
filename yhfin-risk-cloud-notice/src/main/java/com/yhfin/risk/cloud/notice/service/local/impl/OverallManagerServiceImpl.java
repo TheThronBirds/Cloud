@@ -146,9 +146,9 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 						log.info(
 								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
 										+ ",开始轮询发送同步条目消息,发送地址:{}",
-								"http://" + host + ":" + port + "/yhfin/cloud/analy/memorySynchronizate");
+								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate");
 					}
-					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analy/entrySynchronizate",
+					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate",
 							message, ServerResponse.class);
 				}
 			}
@@ -188,9 +188,9 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 						log.info(
 								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
 										+ ",开始轮询发送同步内存消息,发送地址:{}",
-								"http://" + host + ":" + port + "/yhfin/cloud/analy/memorySynchronizate");
+								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate");
 					}
-					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analy/memorySynchronizate",
+					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate",
 							message, ServerResponse.class);
 				}
 			}

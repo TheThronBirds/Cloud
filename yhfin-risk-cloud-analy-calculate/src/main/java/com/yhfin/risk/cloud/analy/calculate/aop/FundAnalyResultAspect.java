@@ -10,10 +10,10 @@
  * @Copyright:2016-2018
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate.aop;
+package com.yhfin.risk.cloud.analy.calculate.aop;
 
 import com.alibaba.fastjson.JSON;
-import com.yhfin.cloud.analy.calculate.service.feign.ISendMessageService;
+import com.yhfin.risk.cloud.analy.calculate.service.feign.ISendMessageService;
 import com.yhfin.risk.core.analy.manage.IEntryStaticAnalyManageService;
 import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
 import com.yhfin.risk.core.common.types.AnalyStateEnum;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 基金分析状态更新发送消息
- * 包名称：com.yhfin.cloud.analy.calculate.aop
+ * 包名称：com.yhfin.risk.cloud.analy.calculate.aop
  * 类名称：FundAnalyResultAspect
  * 类描述：基金分析状态更新发送消息
  * 创建人：@author caohui

@@ -10,7 +10,7 @@
  * @Copyright:2016-2017
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate.service.local;
+package com.yhfin.risk.cloud.analy.calculate.service.local;
 
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
@@ -18,7 +18,7 @@ import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchron
 
 /**
  * 计算分析服务统一管理类服务
- * 包名称：com.yhfin.cloud.analy.calculate.service.local
+ * 包名称：com.yhfin.risk.cloud.analy.calculate.service.local
  * 类名称：IOverallManagerService
  * 类描述：计算分析服务统一管理类服务
  * 创建人：@author caohui

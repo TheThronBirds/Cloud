@@ -10,7 +10,7 @@
  * @Copyright:2016-2018
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate.service.feign;
+package com.yhfin.risk.cloud.analy.calculate.service.feign;
 
 import com.yhfin.risk.core.common.consts.Const;
 import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 发送消息熔断器
- * 包名称：com.yhfin.cloud.analy.calculate.service.feign
+ * 包名称：com.yhfin.risk.cloud.analy.calculate.service.feign
  * 类名称：SendMessageServiceHystrix
  * 类描述：发送消息熔断器
  * 创建人：@author caohui

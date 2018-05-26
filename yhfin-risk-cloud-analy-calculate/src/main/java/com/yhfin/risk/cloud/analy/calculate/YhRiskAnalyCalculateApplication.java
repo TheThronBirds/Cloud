@@ -10,9 +10,9 @@
  * @Copyright:2016-2018
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate;
+package com.yhfin.risk.cloud.analy.calculate;
 
-import com.yhfin.cloud.analy.calculate.channel.InputChannels;
+import com.yhfin.risk.cloud.analy.calculate.channel.InputChannels;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
@@ -22,7 +22,7 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 
 /**
  * 分析计算引擎启动类
- * 包名称：com.yhfin.cloud.analy.calculate
+ * 包名称：com.yhfin.risk..cloud.analy.calculate
  * 类名称：YhRiskAnalyCalculateApplication
  * 类描述：分析计算引擎启动类
  * 创建人：@author caohui

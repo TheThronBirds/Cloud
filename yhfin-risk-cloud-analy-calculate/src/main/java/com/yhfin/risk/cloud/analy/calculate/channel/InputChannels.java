@@ -10,14 +10,14 @@
  * @Copyright:2016-2018
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate.channel;
+package com.yhfin.risk.cloud.analy.calculate.channel;
 
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.messaging.SubscribableChannel;
 
 /**
  * 消息通道
- * 包名称：com.yhfin.cloud.analy.calculate.channel
+ * 包名称：com.yhfin.risk.cloud.analy.calculate.channel
  * 类名称：InputChannels
  * 类描述：消息通道
  * 创建人：@author caohui

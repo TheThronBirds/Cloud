@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * 创建人：@author caohui
  * 创建时间：2018/5/13/16:23
  */
-@FeignClient(value="risk-analy",fallbackFactory=SendStaticSingleFundCalculateServiceHystrix.class)
-@RequestMapping("/yhfin/cloud/analy")
+@FeignClient(value="risk-analy-calculate",fallbackFactory=SendStaticSingleFundCalculateServiceHystrix.class)
+@RequestMapping("/yhfin/cloud/analyCalculate")
 public interface ISendStaticSingleFundtCalculateService {
     /**
      * 发送静态风控请求到分析服务器

@@ -24,8 +24,6 @@ spring:
           contentType: application/json
 
 
-
-
 yhtech:
   web:
     swagger: true

@@ -10,11 +10,11 @@
  * @Copyright:2016-2018
  *
  ********************************************************/
-package com.yhfin.cloud.analy.calculate.service.local.impl;
+package com.yhfin.risk.cloud.analy.calculate.service.local.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.yhfin.cloud.analy.calculate.service.feign.ISendMessageService;
-import com.yhfin.cloud.analy.calculate.service.local.IOverallManagerService;
+import com.yhfin.risk.cloud.analy.calculate.service.feign.ISendMessageService;
+import com.yhfin.risk.cloud.analy.calculate.service.local.IOverallManagerService;
 import com.yhfin.risk.core.analy.manage.IEntryStaticAnalyManageService;
 import com.yhfin.risk.core.analy.optimize.IEntryStaticAnalyService;
 import com.yhfin.risk.core.calculate.reduce.ICalculateService;
@@ -40,11 +40,10 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 计算分析服务统一管理类服务
- * 包名称：com.yhfin.cloud.analy.calculate.service.local.impl
+ * 包名称：com.yhfin.risk.cloud.analy.calculate.service.local.impl
  * 类名称：OverallManagerServiceImpl
  * 类描述：计算分析服务统一管理类服务
  * 创建人：@author caohui
