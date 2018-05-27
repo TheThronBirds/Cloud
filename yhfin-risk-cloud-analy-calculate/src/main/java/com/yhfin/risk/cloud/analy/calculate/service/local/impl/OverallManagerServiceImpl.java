@@ -18,6 +18,7 @@ import com.yhfin.risk.cloud.analy.calculate.service.local.IOverallManagerService
 import com.yhfin.risk.core.analy.manage.IEntryStaticAnalyManageService;
 import com.yhfin.risk.core.analy.optimize.IEntryStaticAnalyService;
 import com.yhfin.risk.core.calculate.reduce.ICalculateService;
+import com.yhfin.risk.core.common.pojos.bos.calculate.EntryCalculateResultBO;
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.analy.FinalStaticEntryCalculateResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO;
@@ -82,7 +83,13 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                 return new Thread(runnable, "分析计算服务，处理同步条目、内存、单个基金计算请求线程池单线程");
             });
 
-    private ExecutorService analyFundExecutor = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors(),
+    private ExecutorService analyFundFinshExecutor = new ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
+            (runnable) -> {
+                return new Thread(runnable, "计算单个基金条目结果完毕最终处理单线程");
+            });
+
+    private ExecutorService analyFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
             0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
@@ -92,7 +99,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         }
     });
 
-    private ExecutorService calculateFundExecutor = new ThreadPoolExecutor(2, Runtime.getRuntime().availableProcessors() * 2,
+    private ExecutorService calculateFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2, Runtime.getRuntime().availableProcessors() * 2 + 1,
             0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
@@ -107,7 +114,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         return new Thread(runnable, "从基金分析完初始结果队列中取初始结果线程池单线程");
     });
 
-    private final Integer STOP_NUMBER = 10;
+    private final Integer STOP_NUMBER = 30;
     /**
      * 定时线程是否启动标识
      */
@@ -125,7 +132,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 
     {
         this.messagePoolDeque = new LinkedBlockingDeque<>(1000);
-        this.calculateResults = new LinkedBlockingDeque<>(100000);
+        this.calculateResults = new LinkedBlockingDeque<>(1000000);
     }
 
     @PostConstruct
@@ -148,15 +155,18 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                 }
             }
         });
-
-
         handerInitialResultPool.execute(() -> {
             while (true) {
                 FinalStaticEntryCalculateDTO finalStaticEntryCalculate = entryStaticAnalyService
                         .finalStaticEntryCalculateTake();
                 if (finalStaticEntryCalculate != null) {
-                    CompletableFuture.runAsync(() -> {
-                        FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = calculateService.calculateRequest(finalStaticEntryCalculate);
+                    CompletableFuture.supplyAsync(() -> {
+                        return calculateService.simpleCalculateRequest(finalStaticEntryCalculate.getEntryConciseCalculate(),
+                                finalStaticEntryCalculate.getFinalStaticEntryCalculateResult().getSerialNumber(),
+                                finalStaticEntryCalculate.getFinalStaticEntryCalculateResult().getFundId(),
+                                finalStaticEntryCalculate.getFinalStaticEntryCalculateResult().getRiskId());
+                    },calculateFundExecutor).thenApplyAsync((calculateResult)->{
+                        FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = calculateService.complexCalculateRequest(finalStaticEntryCalculate, calculateResult);
                         try {
                             calculateResults.put(finalStaticEntryCalculateResult);
                             if (!scheduleStart) {
@@ -169,7 +179,32 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                                 log.error("错误原因:" + e, e);
                             }
                         }
-                    }, calculateFundExecutor);
+                        return finalStaticEntryCalculateResult;
+                    },analyFundFinshExecutor).exceptionally((ex)->{
+                        FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = finalStaticEntryCalculate.getFinalStaticEntryCalculateResult();
+                        String message = StringUtils.isBlank(ex.getMessage())
+                                ? (ex.getCause() != null ? ex.getCause().getMessage() : null) : ex.getMessage();
+                        if (log.isErrorEnabled()) {
+                            log.error(StringUtil.commonLogStart(finalStaticEntryCalculateResult.getSerialNumber(),
+                                    finalStaticEntryCalculateResult.getRequestId()) + ",条目"
+                                    + finalStaticEntryCalculateResult.getRiskId() + ",计算出错," + message, ex);
+
+                        }
+                        finalStaticEntryCalculateResult.setOffendType("error:" + message);
+                        try {
+                            calculateResults.put(finalStaticEntryCalculateResult);
+                            if (!scheduleStart) {
+                                scheduledStart();
+                            }
+                        } catch (InterruptedException e) {
+                            if (log.isErrorEnabled()) {
+                                log.error(StringUtil.commonLogStart(finalStaticEntryCalculateResult.getSerialNumber(), finalStaticEntryCalculateResult.getRequestId())
+                                        + "把计算完毕的基金{}条目{}结果信息放入缓存队列中失败", finalStaticEntryCalculateResult.getFundId(), finalStaticEntryCalculateResult.getRiskId());
+                                log.error("错误原因:" + e, e);
+                            }
+                        }
+                        return finalStaticEntryCalculateResult;
+                    });
                 }
             }
         });
@@ -339,13 +374,11 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                 return null;
 
             }).filter(item -> item != null).forEach((item) -> {
-                CompletableFuture.runAsync(() -> {
-                    if (log.isInfoEnabled()) {
-                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",基金{},发送结果处理信息,{}",
-                                item.getFundId(), JSON.toJSONString(item));
-                    }
-                    sendMessageService.resultMessage(item);
-                });
+                if (log.isInfoEnabled()) {
+                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",基金{},发送结果处理信息,{}",
+                            item.getFundId(), JSON.toJSONString(item));
+                }
+                sendMessageService.resultMessage(item);
             });
         }
     }

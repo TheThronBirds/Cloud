@@ -29,7 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * 接收静态计算请求 包名称：com.yhfin.risk.cloud.notice.controller.feign
@@ -121,6 +123,34 @@ public class StaticCalculateController {
 		if (staticAllFundCalculateResult != null) {
 			return ServerResponse.createBySuccess(staticAllFundCalculateResult.getRequestId(),
 					staticAllFundCalculateResult.getSerialNumber(), staticAllFundCalculateResult);
+		}
+		return ServerResponse.createByError("", "", Const.ExceptionErrorCode.NOTICE_ERROR_CODE, "没有计算信息");
+	}
+
+	/**
+	 *
+	 * 查询静态风控状态信息
+	 *
+	 *
+	 * @Title queryStaticCalculateStatus
+	 * @Description: 查询静态风控状态信息
+	 * @author: caohui
+	 * @Date: 2018年5月22日/下午12:30:14
+	 */
+	@RequestMapping(value = "/queryStaticCalculateNotFinish", method = RequestMethod.POST)
+	public ServerResponse<List<String>> queryStaticCalculateNotFinish() {
+		StaticAllFundCalculateResultDTO staticAllFundCalculateResult = calculateManageService
+				.getStaticAllFundCalculateResult();
+		if (staticAllFundCalculateResult != null) {
+			List<String> collect = staticAllFundCalculateResult.getFundCalculateResults().values().stream().parallel()
+					.filter((item) -> {
+						return !item.getResultValid();
+					}).map((item) -> {
+						return item.getFundId();
+					}).collect(Collectors.toList());
+			return ServerResponse.createBySuccess(staticAllFundCalculateResult.getRequestId(),
+					staticAllFundCalculateResult.getSerialNumber(), collect);
+
 		}
 		return ServerResponse.createByError("", "", Const.ExceptionErrorCode.NOTICE_ERROR_CODE, "没有计算信息");
 	}

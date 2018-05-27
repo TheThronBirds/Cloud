@@ -12,6 +12,7 @@
  ********************************************************/
 package com.yhfin.risk.cloud.bus.service.message;
 
+import com.yhfin.risk.core.common.pojos.dtos.AbstractMessageDTO;
 import com.yhfin.risk.core.common.types.ChannelTypeEnum;
 
 /**
@@ -37,4 +38,16 @@ public interface IMessageService {
      * @Date: 2018/5/13/14:47
      */
     boolean sendMessage(Object message, ChannelTypeEnum channelType);
+
+    /**
+     * 接收消息
+     *
+     * @param message     消息
+     * @param channelType 消息类型
+     * @Title putMessage
+     * @Description: 接收消息
+     * @author: caohui
+     * @Date: 2018/5/26/18:15
+     */
+    void putMessage(AbstractMessageDTO message, ChannelTypeEnum channelType);
 }
