@@ -78,19 +78,19 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
     private ISendMessageService sendMessageService;
 
     private ExecutorService handerMessagePool = new ThreadPoolExecutor(1, 1,
-            0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
+            1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
             (runnable) -> {
                 return new Thread(runnable, "分析计算服务，处理同步条目、内存、单个基金计算请求线程池单线程");
             });
 
-    private ExecutorService analyFundFinshExecutor = new ThreadPoolExecutor(1, 1,
-            0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
+    private ExecutorService analyFundFinshExecutor = new ThreadPoolExecutor(2, Runtime.getRuntime().availableProcessors(),
+            1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
             (runnable) -> {
                 return new Thread(runnable, "计算单个基金条目结果完毕最终处理单线程");
             });
 
     private ExecutorService analyFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
-            0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
+            1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
         @Override
@@ -99,8 +99,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         }
     });
 
-    private ExecutorService calculateFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2, Runtime.getRuntime().availableProcessors() * 2 + 1,
-            0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
+    private ExecutorService calculateFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() + 2,
+            1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
         @Override
@@ -109,8 +109,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         }
     });
 
-    private ExecutorService handerInitialResultPool = new ThreadPoolExecutor(1, 1,
-            0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(512), (runnable) -> {
+    private ExecutorService handerInitialResultPool = new ThreadPoolExecutor(1, 2,
+            1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(512), (runnable) -> {
         return new Thread(runnable, "从基金分析完初始结果队列中取初始结果线程池单线程");
     });
 
@@ -165,7 +165,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                                 finalStaticEntryCalculate.getFinalStaticEntryCalculateResult().getSerialNumber(),
                                 finalStaticEntryCalculate.getFinalStaticEntryCalculateResult().getFundId(),
                                 finalStaticEntryCalculate.getFinalStaticEntryCalculateResult().getRiskId());
-                    },calculateFundExecutor).thenApplyAsync((calculateResult)->{
+                    }, calculateFundExecutor).thenApplyAsync((calculateResult) -> {
                         FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = calculateService.complexCalculateRequest(finalStaticEntryCalculate, calculateResult);
                         try {
                             calculateResults.put(finalStaticEntryCalculateResult);
@@ -180,7 +180,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                             }
                         }
                         return finalStaticEntryCalculateResult;
-                    },analyFundFinshExecutor).exceptionally((ex)->{
+                    }, analyFundFinshExecutor).exceptionally((ex) -> {
                         FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = finalStaticEntryCalculate.getFinalStaticEntryCalculateResult();
                         String message = StringUtils.isBlank(ex.getMessage())
                                 ? (ex.getCause() != null ? ex.getCause().getMessage() : null) : ex.getMessage();
