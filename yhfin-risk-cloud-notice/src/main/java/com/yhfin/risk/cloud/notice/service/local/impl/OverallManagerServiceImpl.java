@@ -14,16 +14,14 @@ package com.yhfin.risk.cloud.notice.service.local.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -45,7 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 把通知中心接收 的消息放入队列中，按照顺序一个一个进行处理；通过轮询方式发送同步内存 同步条目消息
  * 包名称：com.yhfin.risk.cloud.notice.service.local.impl
- * 类名称：OverallManagerServiceImpl 类描述：通过轮询方式发送同步内存 同步条目消息 创建人：@author caohui
+ * 类名称：OverallManagerServiceImpl
+ * 类描述：通过轮询方式发送同步内存 同步条目消息
+ * 创建人：@author caohui
  * 创建时间：2018/5/13/12:20
  */
 @Slf4j
@@ -61,7 +61,11 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	private ExecutorService fixedThreadPool = Executors.newFixedThreadPool(1);
+	private ExecutorService handerMassegePool = new ThreadPoolExecutor(1, 1,
+			1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
+			(runnable) -> {
+				return new Thread(runnable, "取出静态基金分析计算、同步条目、同步内存信息线程池单线程");
+			});
 
 	@Autowired
 	private IEntryBuildSqlService buildSqlService;
@@ -69,7 +73,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 	private BlockingDeque<Message<?>> messageDeque;
 
 	{
-		this.messageDeque = new LinkedBlockingDeque<>(1000);
+		this.messageDeque = new LinkedBlockingDeque<>(10000);
 	}
 
 	@PostConstruct
@@ -82,16 +86,22 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 	 * @Date: 2018年5月21日/上午11:02:19
 	 */
 	private void init() {
-		fixedThreadPool.submit(() -> {
+		handerMassegePool.execute(() -> {
 			while (true) {
-				Object message = messageDeque.take().getMessage();
-				if (message != null) {
-					if (message instanceof EntryMessageSynchronizateDTO) {
-						realHanderEntrySynchronizateMessage((EntryMessageSynchronizateDTO) message);
-					} else if (message instanceof MemoryMessageSynchronizateDTO) {
-						realHanderMemorySynchronizateMessage((MemoryMessageSynchronizateDTO) message);
-					} else if (message instanceof StaticCalculateDTO) {
-						realHanderStaticCalculateRequest((StaticCalculateDTO) message);
+				try {
+					Object message = messageDeque.take().getMessage();
+					if (message != null) {
+						if (message instanceof EntryMessageSynchronizateDTO) {
+							realHanderEntrySynchronizateMessage((EntryMessageSynchronizateDTO) message);
+						} else if (message instanceof MemoryMessageSynchronizateDTO) {
+							realHanderMemorySynchronizateMessage((MemoryMessageSynchronizateDTO) message);
+						} else if (message instanceof StaticCalculateDTO) {
+							realHanderStaticCalculateRequest((StaticCalculateDTO) message);
+						}
+					}
+				}catch (InterruptedException e){
+					if(log.isErrorEnabled()){
+						log.error("取出静态基金分析计算、同步条目、同步内存信息失败",e);
 					}
 				}
 			}

@@ -43,16 +43,22 @@ public class MessageController {
 
 	@RequestMapping(value = "/memoryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
 	public ServerResponse<MessageResultDTO> outputMessageMemory(@RequestBody MemoryMessageSynchronizateDTO message) {
+		if (log.isDebugEnabled()) {
+			log.debug("收到消息{},消息类型{}", message, message.channelType());
+		}
 		CompletableFuture.runAsync(()->{
-			messageService.putMessage(message, ChannelTypeEnum.MEMORY);
+			messageService.sendMessage(message);
 		});
 		return ServerResponse.createBySuccess(message.getRequestId(),message.getSerialNumber(),null);
 	}
 
 	@RequestMapping(value = "/entryMessageSynchronizate", method = RequestMethod.POST, produces = "application/json")
 	public ServerResponse<MessageResultDTO> outputMessageEntry(@RequestBody EntryMessageSynchronizateDTO message) {
+		if (log.isDebugEnabled()) {
+			log.debug("收到消息{},消息类型{}", message, message.channelType());
+		}
 		CompletableFuture.runAsync(()->{
-			messageService.putMessage(message, ChannelTypeEnum.ENTRY);
+			messageService.sendMessage(message);
 		});
 		return ServerResponse.createBySuccess(message.getRequestId(),message.getSerialNumber(),null);
 	}
@@ -71,8 +77,11 @@ public class MessageController {
 	 */
 	@RequestMapping(value = "/analyMessage", method = RequestMethod.POST, produces = "application/json")
 	ServerResponse<MessageResultDTO> analyMessage(@RequestBody SingleFundAnalyResultDTO message) {
+		if (log.isDebugEnabled()) {
+			log.debug("收到消息{},消息类型{}", message, message.channelType());
+		}
 		CompletableFuture.runAsync(()->{
-			messageService.putMessage(message, ChannelTypeEnum.ANALY);
+			messageService.sendMessage(message);
 		});
 		return ServerResponse.createBySuccess(message.getRequestId(),message.getSerialNumber(),null);
 	}
@@ -90,8 +99,11 @@ public class MessageController {
 	 */
 	@RequestMapping(value = "/resultMessage", method = RequestMethod.POST, produces = "application/json")
 	ServerResponse<MessageResultDTO> resultMessage(@RequestBody ResultHandleResultDTO message) {
+		if (log.isDebugEnabled()) {
+			log.debug("收到消息{},消息类型{}", message, message.channelType());
+		}
 		CompletableFuture.runAsync(()->{
-			messageService.putMessage(message, ChannelTypeEnum.RESULT);
+			messageService.sendMessage(message);
 		});
 		return ServerResponse.createBySuccess(message.getRequestId(),message.getSerialNumber(),null);
 	}

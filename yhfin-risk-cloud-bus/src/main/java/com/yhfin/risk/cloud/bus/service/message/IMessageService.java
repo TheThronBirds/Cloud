@@ -30,24 +30,12 @@ public interface IMessageService {
      * 发送消息
      *
      * @param message     消息体
-     * @param channelType 消息类型
      * @return 是否成功
      * @Title sendMessage
      * @Description: 发送消息
      * @author: caohui
      * @Date: 2018/5/13/14:47
      */
-    boolean sendMessage(Object message, ChannelTypeEnum channelType);
+    boolean sendMessage(AbstractMessageDTO message);
 
-    /**
-     * 接收消息
-     *
-     * @param message     消息
-     * @param channelType 消息类型
-     * @Title putMessage
-     * @Description: 接收消息
-     * @author: caohui
-     * @Date: 2018/5/26/18:15
-     */
-    void putMessage(AbstractMessageDTO message, ChannelTypeEnum channelType);
 }

@@ -15,6 +15,7 @@ package com.yhfin.risk.cloud.analy.calculate.aop;
 import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.cloud.analy.calculate.service.feign.ISendMessageService;
 import com.yhfin.risk.core.analy.manage.IEntryStaticAnalyManageService;
+import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.analy.SingleFundAnalyResultDTO;
 import com.yhfin.risk.core.common.types.AnalyStateEnum;
 import com.yhfin.risk.core.common.utils.StringUtil;
@@ -48,14 +49,11 @@ public class FundAnalyResultAspect {
     private ISendMessageService messageService;
 
     /**
-     *
      * 对基金分析状态更新进行切面,当基金分析状态为成功或者失败,则发送消息给通知中心
      *
-     *
+     * @param joinPoint 切面参数对象
      * @Title fundAnalyResultAop
-     * @Description: 对基金分析状态更新进行切面,当基金分析状态为成功或者失败,则发送消息给通知中心
-     * @param joinPoint
-     *            切面参数对象
+     * @Description: 对基金分析状态更新进行切面, 当基金分析状态为成功或者失败, 则发送消息给通知中心
      * @author: caohui
      * @Date: 2018年5月14日/下午3:55:49
      */
@@ -67,34 +65,35 @@ public class FundAnalyResultAspect {
         if (analyState == AnalyStateEnum.FINISH || analyState == AnalyStateEnum.ERROR) {
             String requestId = (String) args[2];
             String serialNumber = (String) args[1];
-            Map<String, SingleFundAnalyResultDTO> singleFundAnalyResultDTOs = entryStaticAnalyManageService
+            Map<String, SingleFundAnalyCalculateDTO> stringSingleFundAnalyCalculates = entryStaticAnalyManageService
                     .getfundAnalyResults();
-            SingleFundAnalyResultDTO fundAnalyResult = singleFundAnalyResultDTOs.get(fundId);
-            if (fundAnalyResult != null) {
-                if (log.isInfoEnabled()) {
-                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
-                            JSON.toJSONString(fundAnalyResult));
-                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
+            SingleFundAnalyCalculateDTO fundAnalyCalculateResult = stringSingleFundAnalyCalculates.get(fundId);
+            if (fundAnalyCalculateResult != null) {
+                SingleFundAnalyResultDTO fundAnalyResult = fundAnalyCalculateResult.getSingleFundAnalyResult();
+                if (fundAnalyResult != null) {
+                    if (log.isInfoEnabled()) {
+                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
+                                JSON.toJSONString(fundAnalyResult));
+                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
+                    }
+                    messageService.analyMessage(fundAnalyResult);
+                    return;
                 }
-                messageService.analyMessage(fundAnalyResult);
-                return;
-            }
-
-            if (fundAnalyResult == null && analyState == AnalyStateEnum.ERROR) {
-                if (log.isInfoEnabled()) {
-                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
-                            JSON.toJSONString(fundAnalyResult));
-                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
+                if (fundAnalyResult == null && analyState == AnalyStateEnum.ERROR) {
+                    if (log.isInfoEnabled()) {
+                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
+                                JSON.toJSONString(fundAnalyResult));
+                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
+                    }
+                    SingleFundAnalyResultDTO fundAnalyResultError = new SingleFundAnalyResultDTO(requestId, serialNumber);
+                    fundAnalyResultError.setAnalyState(AnalyStateEnum.ERROR);
+                    fundAnalyResultError.setSuccessCalculateAnaly(new AtomicInteger(0));
+                    fundAnalyResultError.setErrorCalculateAnaly(new AtomicInteger(0));
+                    fundAnalyResultError.setFundId(fundId);
+                    messageService.analyMessage(fundAnalyResultError);
+                    return;
                 }
-                SingleFundAnalyResultDTO fundAnalyResultError = new SingleFundAnalyResultDTO(requestId, serialNumber);
-                fundAnalyResultError.setAnalyState(AnalyStateEnum.ERROR);
-                fundAnalyResultError.setSuccessCalculateAnaly(new AtomicInteger(0));
-                fundAnalyResultError.setErrorCalculateAnaly(new AtomicInteger(0));
-                fundAnalyResultError.setFundId(fundId);
-                messageService.analyMessage(fundAnalyResultError);
-                return;
             }
-
         }
     }
 }
