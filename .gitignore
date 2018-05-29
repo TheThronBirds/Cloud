@@ -1,6 +1,6 @@
 src/yhfin-risk-cloud-config
 src/yhfin-risk-cloud-register
-
+src/log/
 log/
 target/
 !.mvn/wrapper/maven-wrapper.jar
