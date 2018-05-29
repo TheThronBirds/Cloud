@@ -4,10 +4,7 @@ src/yhfin-risk-cloud-register
 log/
 target/
 !.mvn/wrapper/maven-wrapper.jar
-yh-risk-cloud-gateway/
-yh-risk-cloud-register/
-yh-risk-remote-config/
-yh-risk-cloud-config/
+
 ### STS ###
 .apt_generated
 .classpath
