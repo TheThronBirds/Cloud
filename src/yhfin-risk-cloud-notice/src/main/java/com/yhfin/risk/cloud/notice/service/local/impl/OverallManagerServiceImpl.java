@@ -137,31 +137,34 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 			if (log.isInfoEnabled()) {
 				log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理同步条目消息");
 			}
-			if (message.getBuildSql() != null && message.getBuildSql()) {
-				if (message.getSynchronizateAll() != null && message.getSynchronizateAll()) {
-					buildSqlService.entryBuildSqlAll();
-				} else {
-					List<String> updateRiskIds = message.getUpdateRiskIds();
-					if (updateRiskIds != null && !updateRiskIds.isEmpty()) {
-						buildSqlService.entryBuildSqls(updateRiskIds.toArray(new String[updateRiskIds.size()]));
+			if(!calculateManageService.getCalculateProcess()){
+				if (message.getBuildSql() != null && message.getBuildSql()) {
+					if (message.getSynchronizateAll() != null && message.getSynchronizateAll()) {
+						buildSqlService.entryBuildSqlAll();
+					} else {
+						List<String> updateRiskIds = message.getUpdateRiskIds();
+						if (updateRiskIds != null && !updateRiskIds.isEmpty()) {
+							buildSqlService.entryBuildSqls(updateRiskIds.toArray(new String[updateRiskIds.size()]));
+						}
+					}
+				}
+				List<ServiceInstance> instances = client.getInstances("RISK-ANALY-CALCULATE");
+				if (instances != null && !instances.isEmpty()) {
+					for (ServiceInstance instance : instances) {
+						String host = instance.getHost();
+						int port = instance.getPort();
+						if (log.isInfoEnabled()) {
+							log.info(
+									StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
+											+ ",开始轮询发送同步条目消息,发送地址:{}",
+									"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate");
+						}
+						restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate",
+								message, ServerResponse.class);
 					}
 				}
 			}
-			List<ServiceInstance> instances = client.getInstances("RISK-ANALY-CALCULATE");
-			if (instances != null && !instances.isEmpty()) {
-				for (ServiceInstance instance : instances) {
-					String host = instance.getHost();
-					int port = instance.getPort();
-					if (log.isInfoEnabled()) {
-						log.info(
-								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
-										+ ",开始轮询发送同步条目消息,发送地址:{}",
-								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate");
-					}
-					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate",
-							message, ServerResponse.class);
-				}
-			}
+
 		} catch (Exception e) {
 			if (log.isErrorEnabled()) {
 				log.error(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",同步条目消息处理失败",
@@ -186,22 +189,25 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 			if (log.isInfoEnabled()) {
 				log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理同步内存消息");
 			}
-			List<ServiceInstance> analyInstances = client.getInstances("RISK-ANALY-CALCULATE");
-			if (analyInstances == null) {
-				analyInstances = new ArrayList<>(10);
-			}
-			if (analyInstances != null && !analyInstances.isEmpty()) {
-				for (ServiceInstance instance : analyInstances) {
-					String host = instance.getHost();
-					int port = instance.getPort();
-					if (log.isInfoEnabled()) {
-						log.info(
-								StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
-										+ ",开始轮询发送同步内存消息,发送地址:{}",
-								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate");
+
+			if(!calculateManageService.getCalculateProcess()){
+				List<ServiceInstance> analyInstances = client.getInstances("RISK-ANALY-CALCULATE");
+				if (analyInstances == null) {
+					analyInstances = new ArrayList<>(10);
+				}
+				if (analyInstances != null && !analyInstances.isEmpty()) {
+					for (ServiceInstance instance : analyInstances) {
+						String host = instance.getHost();
+						int port = instance.getPort();
+						if (log.isInfoEnabled()) {
+							log.info(
+									StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId())
+											+ ",开始轮询发送同步内存消息,发送地址:{}",
+									"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate");
+						}
+						restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate",
+								message, ServerResponse.class);
 					}
-					restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate",
-							message, ServerResponse.class);
 				}
 			}
 
