@@ -5,7 +5,7 @@ log/
 target/
 !.mvn/wrapper/maven-wrapper.jar
 DevPlatform.ini
-赢和研发管理平台.exe
+*.exe
 ### STS ###
 .apt_generated
 .classpath
