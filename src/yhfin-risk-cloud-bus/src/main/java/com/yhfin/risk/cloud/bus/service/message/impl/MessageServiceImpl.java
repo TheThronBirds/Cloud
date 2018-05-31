@@ -80,8 +80,8 @@ public class MessageServiceImpl implements IMessageService {
     public boolean sendMessage(AbstractMessageDTO message) {
 
         if (message.channelType() != null) {
-            if (log.isInfoEnabled()) {
-                log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",发送{}消息,{}",
+            if (log.isDebugEnabled()) {
+                log.debug(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",发送{}消息,{}",
                         message.channelType().getTypeDes(), JSON.toJSONString(message));
             }
         }

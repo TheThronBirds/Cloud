@@ -71,8 +71,8 @@ public class FundAnalyResultAspect {
             if (fundAnalyCalculateResult != null) {
                 SingleFundAnalyResultDTO fundAnalyResult = fundAnalyCalculateResult.getSingleFundAnalyResult();
                 if (fundAnalyResult != null) {
-                    if (log.isInfoEnabled()) {
-                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
+                    if (log.isDebugEnabled()) {
+                        log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
                                 JSON.toJSONString(fundAnalyResult));
                         log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
                     }
@@ -80,10 +80,10 @@ public class FundAnalyResultAspect {
                     return;
                 }
                 if (fundAnalyResult == null && analyState == AnalyStateEnum.ERROR) {
-                    if (log.isInfoEnabled()) {
-                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
+                    if (log.isDebugEnabled()) {
+                        log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",单个基金{}分析完毕,{}", fundId,
                                 JSON.toJSONString(fundAnalyResult));
-                        log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
+                        log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",发送单个基金{}分析结果到通知服务器", fundId);
                     }
                     SingleFundAnalyResultDTO fundAnalyResultError = new SingleFundAnalyResultDTO(requestId, serialNumber);
                     fundAnalyResultError.setAnalyState(AnalyStateEnum.ERROR);

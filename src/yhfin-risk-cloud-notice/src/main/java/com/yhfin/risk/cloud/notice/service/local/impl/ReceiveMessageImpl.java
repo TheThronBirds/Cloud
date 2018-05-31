@@ -52,8 +52,8 @@ public class ReceiveMessageImpl implements IReceiveMessage {
     @StreamListener("analy")
     @Override
     public void messageAnaly(SingleFundAnalyResultDTO message) {
-        if (log.isInfoEnabled()) {
-            log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",收到消息服务器，分析基金结果消息,{}",  JSON.toJSONString(message));
+        if (log.isDebugEnabled()) {
+            log.debug(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",收到消息服务器，分析基金结果消息,{}",  JSON.toJSONString(message));
         }
         CompletableFuture.runAsync(()->{
             manageService.handerSingleFundAnalyResult(message);
@@ -72,8 +72,8 @@ public class ReceiveMessageImpl implements IReceiveMessage {
     @StreamListener("result")
     @Override
     public void messageResult(ResultHandleResultDTO message) {
-        if (log.isInfoEnabled()) {
-            log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",收到消息服务器，计算基金结果处理消息,{}", JSON.toJSONString(message));
+        if (log.isDebugEnabled()) {
+            log.debug(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",收到消息服务器，计算基金结果处理消息,{}", JSON.toJSONString(message));
         }
         CompletableFuture.runAsync(()->{
             manageService.handerResultHandleResult(message);

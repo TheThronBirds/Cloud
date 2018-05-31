@@ -59,12 +59,12 @@
 	
 	<!-- 开发环境 -->
 	<springProfile name="dev">
-	<!--  
+
 		<logger name="com.yhfin" level="INFO">
 			<appender-ref ref="LOGCONSOLE" />
 			<appender-ref ref="asyncFileAppender" />
 		</logger>
-		-->
+
 		<root level="INFO">
             <appender-ref ref="LOGCONSOLE" />
             <appender-ref ref="asyncFileAppender" />
@@ -73,13 +73,13 @@
 	
 	<!-- 测试环境 -->
 	<springProfile name="test">
-	<!--  
+
 		<logger name="com.yhfin" level="INFO">
 			<appender-ref ref="LOGCONSOLE" />
 			<appender-ref ref="LOGSTASH-TEST"/>
 			<appender-ref ref="asyncFileAppender" />
 		</logger>
-		-->
+
 		<root level="INFO">
             <appender-ref ref="LOGCONSOLE" />
             <appender-ref ref="LOGSTASH-TEST" />

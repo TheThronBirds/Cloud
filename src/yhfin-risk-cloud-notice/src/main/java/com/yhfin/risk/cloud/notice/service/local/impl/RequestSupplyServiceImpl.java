@@ -38,8 +38,8 @@ public class RequestSupplyServiceImpl implements IRequestSupplyService {
 	public String supplyRequestId() {
 		String result = "";
 		result = UUID.randomUUID().toString();
-		if (log.isInfoEnabled()) {
-			log.info("生成UUID{},当作请求序号", result);
+		if (log.isDebugEnabled()) {
+			log.debug("生成UUID{},当作请求序号", result);
 		}
 		return result;
 	}
@@ -48,8 +48,8 @@ public class RequestSupplyServiceImpl implements IRequestSupplyService {
 	public String supplySerialNumber() {
 		String result = "";
 		result = riskDao.getNextSerialNumber();
-		if (log.isInfoEnabled()) {
-			log.info("生成下个流水号{}", result);
+		if (log.isDebugEnabled()) {
+			log.debug("生成下个流水号{}", result);
 		}
 		return result;
 	}

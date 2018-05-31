@@ -318,8 +318,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
      */
     private void sendResultHanderMessage(List<FinalStaticEntryCalculateResultDTO> calculateResults, boolean valid) {
         if (calculateResults != null && !calculateResults.isEmpty()) {
-            if (log.isInfoEnabled()) {
-                log.info("发送计算结果处理信息给消息服务器");
+            if (log.isDebugEnabled()) {
+                log.debug("发送计算结果处理信息给消息服务器");
             }
             String requestId = calculateResults.get(0).getRequestId();
             String serialNumber = calculateResults.get(0).getSerialNumber();
@@ -341,8 +341,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                 return null;
 
             }).filter(item -> item != null).forEach((item) -> {
-                if (log.isInfoEnabled()) {
-                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",基金{},发送结果处理信息,{}",
+                if (log.isDebugEnabled()) {
+                    log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",基金{},发送结果处理信息,{}",
                             item.getFundId(), JSON.toJSONString(item));
                 }
                 if (valid) {
@@ -370,8 +370,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         String serialNumber = memoryMessageSynchronizate.getSerialNumber();
         String requestId = memoryMessageSynchronizate.getRequestId();
         try {
-            if (log.isInfoEnabled()) {
-                log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",收到同步内存消息,把消息放入队列中,等待处理");
+            if (log.isDebugEnabled()) {
+                log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",收到同步内存消息,把消息放入队列中,等待处理");
             }
             messagePoolDeque.put(memoryMessageSynchronizate);
         } catch (InterruptedException e) {
@@ -429,8 +429,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         String requestId = entryMessageSynchronizate.getRequestId();
 
         try {
-            if (log.isInfoEnabled()) {
-                log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",收到同步条目消息,把消息放入队列中,等待处理");
+            if (log.isDebugEnabled()) {
+                log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",收到同步条目消息,把消息放入队列中,等待处理");
             }
             messagePoolDeque.put(entryMessageSynchronizate);
         } catch (InterruptedException e) {
@@ -485,8 +485,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         try {
             judeValidStaticSingleFundCalculate(serialNumber);
             if (StringUtils.equals(this.currentSerialNumber, serialNumber)) {
-                if (log.isInfoEnabled()) {
-                    log.info(StringUtil.commonLogStart(serialNumber, requestId) + ",收到静态基金分析计算消息,把消息放入队列中,等待处理");
+                if (log.isDebugEnabled()) {
+                    log.debug(StringUtil.commonLogStart(serialNumber, requestId) + ",收到静态基金分析计算消息,把消息放入队列中,等待处理");
                 }
                 messagePoolDeque.put(singleFundCalculate);
             }
