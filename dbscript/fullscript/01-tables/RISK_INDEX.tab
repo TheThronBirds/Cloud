@@ -1,0 +1,57 @@
+DECLARE
+I_EXISTS    NUMBER;
+BEGIN
+  SELECT COUNT(1) INTO I_EXISTS FROM USER_TABLES A WHERE A.TABLE_NAME = 'RISK_INDEX';
+  
+  IF I_EXISTS > 0 THEN
+    
+     EXECUTE IMMEDIATE 'DROP TABLE RISK_INDEX';
+  
+  END IF;
+  
+  
+   EXECUTE IMMEDIATE 
+            '
+            create table RISK_INDEX
+              (
+                i_risk_id                 NUMBER not null,
+                i_risk_control_no         NUMBER not null,
+                i_type                    NUMBER not null,
+                vc_operate_flag           VARCHAR2(8) not null,
+                vc_fund_type              VARCHAR2(100) not null,
+                vc_fund_value             VARCHAR2(600) not null,
+                vc_value                  VARCHAR2(20) not null,
+                vc_value_name             VARCHAR2(100) not null,
+                c_bound_control_flag      VARCHAR2(1) not null,
+                vc_fund_debar             VARCHAR2(600) default '' '' not null,
+                c_bound_flag              VARCHAR2(1) default '' '' not null,
+                c_simpletype_operate      VARCHAR2(1) default '' '' not null,
+                vc_arithmetic_type        VARCHAR2(20) default '' '' not null,
+                vc_index_unit             VARCHAR2(50),
+                en_arithmetic_value       NUMBER(22,4) default 0 not null,
+                vc_fundbound_sql          VARCHAR2(3000) default '' '' not null,
+                vc_stockbound_sql         VARCHAR2(3000) default '' '' not null,
+                vc_ctl_fundtype           VARCHAR2(100) default '' '' not null,
+                vc_likeoccur_type         VARCHAR2(1000) default '' '' not null,
+                vc_stocks_value_sql       VARCHAR2(3000) default '' '',
+                vc_entrust_value_sql      VARCHAR2(3000) default '' '',
+                vc_inst_value_sql         VARCHAR2(3000) default '' '',
+                vc_stocks_detail_sql      VARCHAR2(3000) default '' '' not null,
+                vc_entrust_detail_sql     VARCHAR2(3000) default '' '' not null,
+                vc_inst_detail_sql        VARCHAR2(3000) default '' '' not null,
+                vc_connection_id          VARCHAR2(50) default '' '' not null,
+                vc_investbound_sql        VARCHAR2(3000) default '' '' not null,
+                vc_static_value_sql       VARCHAR2(3000),
+                vc_control_type           VARCHAR2(1),
+                vc_static_detail_sql      VARCHAR2(4000) default '' '' not null,
+                vc_assettype_detail       VARCHAR2(50) default '' '' not null,
+                is_negate                 VARCHAR2(1),
+                vc_catcode                VARCHAR2(20) default '' '' not null,
+                vc_stockbound_dynamic_sql VARCHAR2(3000)
+              )
+            
+            ';
+     EXECUTE IMMEDIATE ' alter table RISK_INDEX add constraint PK_RISK_INDEX primary key (I_RISK_ID, I_RISK_CONTROL_NO, I_TYPE)';
+  
+  
+END;

@@ -93,4 +93,13 @@
 =>修改列表:
   D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\04-sequences\SEQ_SERIAL_NUMBER.seq
   D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\02-views\V_RISK_FUND_VALID_RISK.vw
+---$#$---------------------
+=>序号:9
+=>类型:STORY
+=>编号:000001
+=>标题:静态风控动态sql
+=>修改用户:caohui
+=>影响范围:静态风控计算
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180531-caohui-RISK_INDEX.sql
 */
