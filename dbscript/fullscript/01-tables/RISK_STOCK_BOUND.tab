@@ -1,0 +1,33 @@
+DECLARE
+--RISK_STOCK_BOUND
+I_EXISTS NUMBER;
+BEGIN
+  SELECT COUNT(1) INTO I_EXISTS  FROM USER_TABLES A WHERE A.TABLE_NAME = 'RISK_STOCK_BOUND';
+  
+  IF I_EXISTS > 0 THEN
+    EXECUTE IMMEDIATE 'DROP TABLE RISK_STOCK_BOUND';
+  END IF;
+  
+  EXECUTE IMMEDIATE '
+          create table RISK_STOCK_BOUND
+        (
+          i_risk_id         NUMBER not null,
+          i_risk_control_no NUMBER not null,
+          i_type            NUMBER default 0 not null,
+          vc_operate_flag   VARCHAR2(6) default '' '' not null,
+          vc_bound_property VARCHAR2(100) default '' '' not null,
+          vc_control_type   VARCHAR2(20) default '' '' not null,
+          vc_value          VARCHAR2(4000) default '' '' not null,
+          c_likecurr        VARCHAR2(10) default '' '' not null,
+          i_index           NUMBER default 0 not null,
+          vc_ctl_bs         VARCHAR2(2) default '' '' not null,
+          c_bound_type      VARCHAR2(1) default ''1'' not null,
+          vc_param1         VARCHAR2(2) default '' '' not null,
+          vc_param2         VARCHAR2(4000) default '' '' not null,
+          vc_param3         VARCHAR2(100) default '' '',
+          i_isshow          NUMBER default '1' not null,
+          i_config_id       NUMBER,
+          i_parent_id       NUMBER
+        )';
+
+END;

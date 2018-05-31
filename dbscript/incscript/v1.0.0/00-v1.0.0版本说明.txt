@@ -1,0 +1,96 @@
+/*00-v1.0.0版本说明.txt包含的文件
+=>序号:0
+=>类型:STORY
+=>编号:000001
+=>标题:FUNDINFOS表格添加字段I_STATIC_NUMBER
+=>修改用户:caohui
+=>影响范围:分发基金静态计算按照基金此字段排序分发到分析计算服务
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-FUNDINFOS.sql
+---$#$---------------------
+=>序号:1
+=>类型:STORY
+=>编号:000001
+=>标题:增加额外参数配置表RISK_EXTRA_PARAM_CONFIG
+=>修改用户:caohui
+=>影响范围:条目计算时需要指令javabean额外的参数时，通过此配置来配置怎样获取对应的额外参数
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-FUNDINFOS.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_EXTRA_PARAM_CONFIG.sql
+---$#$---------------------
+=>序号:2
+=>类型:STORY
+=>编号:000001
+=>标题:基金范围配置支持分组或并且关系
+=>修改用户:caohui
+=>影响范围:风控引擎计算
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-FUNDINFOS.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_EXTRA_PARAM_CONFIG.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_FUND_SCOPE.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_STOCK_BOUND.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISKRESULT_STATIC.sql
+---$#$---------------------
+=>序号:3
+=>类型:STORY
+=>编号:000001
+=>标题:证券范围配置支持分组或并且关系
+=>修改用户:caohui
+=>影响范围:风控引擎计算
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-FUNDINFOS.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_EXTRA_PARAM_CONFIG.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_FUND_SCOPE.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_STOCK_BOUND.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISKRESULT_STATIC.sql
+---$#$---------------------
+=>序号:4
+=>类型:STORY
+=>编号:000001
+=>标题:风控静态计算结果存储表
+=>修改用户:caohui
+=>影响范围:静态风控结果处理
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-FUNDINFOS.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_EXTRA_PARAM_CONFIG.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_FUND_SCOPE.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISK_STOCK_BOUND.sql
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\incscript\v1.0.0\01-tab-20180529-caohui-RISKRESULT_STATIC.sql
+---$#$---------------------
+=>序号:5
+=>类型:DevRepair
+=>编号:0000
+=>标题:sadfasdf
+=>修改用户:caohui
+=>影响范围:adsfasdf
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\05-procedures\FORALL_STATIC_BASE.prc
+---$#$---------------------
+=>序号:6
+=>类型:STORY
+=>编号:000001
+=>标题:静态风控存储数据存储过程
+=>修改用户:caohui
+=>影响范围:静态风控条目结果数据处理
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\05-procedures\FORALL_STATIC_BASE.prc
+---$#$---------------------
+=>序号:7
+=>类型:STORY
+=>编号:000001
+=>标题:流水号序列
+=>修改用户:caohui
+=>影响范围:静态风控计算
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\04-sequences\SEQ_SERIAL_NUMBER.seq
+---$#$---------------------
+=>序号:8
+=>类型:STORY
+=>编号:000001
+=>标题:基金相关条目视图
+=>修改用户:caohui
+=>影响范围:静态风控引擎计算
+=>修改列表:
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\04-sequences\SEQ_SERIAL_NUMBER.seq
+  D:\workplace\idea\yhfin-risk-cloud-parent\dbscript\fullscript\02-views\V_RISK_FUND_VALID_RISK.vw
+*/

@@ -1,0 +1,78 @@
+--产品
+DECLARE
+--RISKSET
+I_EXISTS NUMBER;
+BEGIN
+
+  SELECT COUNT(1) INTO I_EXISTS FROM USER_TABLES A WHERE A.TABLE_NAME = 'RISKSET' ;
+  IF I_EXISTS = 0 THEN
+    EXECUTE IMMEDIATE 'DROP TABLE RISKSET';
+    
+  END IF;
+
+    EXECUTE IMMEDIATE '
+                create table RISKSET
+            (
+              i_risk_id             NUMBER not null,
+              i_risk_no             NUMBER default 0 not null,
+              vc_fund               VARCHAR2(200),
+              vc_account            VARCHAR2(200),
+              vc_group              VARCHAR2(200),
+              i_begin_date          NUMBER default 0 not null,
+              i_end_date            NUMBER default 0 not null,
+              vc_risk_description   VARCHAR2(500) default '' '' not null,
+              i_level               NUMBER default 0 not null,
+              i_state               NUMBER default 0 not null,
+              vc_declare_type       VARCHAR2(10) default '' '' not null,
+              i_control_type        NUMBER default 0 not null,
+              en_control_value1     NUMBER(32,8) default -1 not null,
+              i_valve_type1         NUMBER default 0 not null,
+              en_control_value2     NUMBER(32,8) default -1 not null,
+              i_valve_type2         NUMBER default 0 not null,
+              en_control_value3     NUMBER(32,8) default -1 not null,
+              i_valve_type3         NUMBER default 0 not null,
+              i_utterly_value_flag  NUMBER default 0 not null,
+              i_precondition_flag   NUMBER default 0 not null,
+              i_compare_bs          NUMBER default 0 not null,
+              i_fund_lay            NUMBER default 0 not null,
+              vc_fund_value         VARCHAR2(2000) default '' '' not null,
+              vc_detail_type        VARCHAR2(50) default '' '' not null,
+              i_mainasset           NUMBER default 0 not null,
+              vc_fund_bound         VARCHAR2(50) default '' '' not null,
+              i_escape_risk_id      NUMBER default 0,
+              vc_valve_area1        VARCHAR2(50),
+              vc_valve_area2        VARCHAR2(50),
+              vc_valve_area3        VARCHAR2(50),
+              i_checkstate          NUMBER(2) default 0,
+              vc_check_type         VARCHAR2(1) default ''1'' not null,
+              i_riskset_type        NUMBER default 0 not null,
+              vc_simple_type        VARCHAR2(10) default '' '' not null,
+              i_modify_date         NUMBER(8) default 0 not null,
+              i_modify_time         NUMBER(8) default 0 not null,
+              vc_modify_person      VARCHAR2(50) default '' '' not null,
+              i_check_date          NUMBER(8) default 0 not null,
+              i_check_time          NUMBER(8) default 0 not null,
+              vc_check_person       VARCHAR2(50) default '' '' not null,
+              vc_check_action       VARCHAR2(10) default '' '',
+              vc_control_name       VARCHAR2(100) default '' '' not null,
+              i_fz_abs              NUMBER default 0 not null,
+              vc_fz_unit            VARCHAR2(50),
+              vc_fm_unit            VARCHAR2(50),
+              vc_unit               VARCHAR2(50),
+              c_save_detail         VARCHAR2(1) default '' '' not null,
+              i_strictcontrol_state NUMBER(2) default 1,
+              i_sql_analyzed        NUMBER(1) default 0 not null,
+              vc_property_key       VARCHAR2(1000) default '' '' not null,
+              vc_control_range_sql  VARCHAR2(3000) default '' '' not null,
+              vc_control_type       VARCHAR2(2),
+              vc_control_value      VARCHAR2(4000),
+              vc_control_debar      VARCHAR2(4000),
+              vc_control_lay        VARCHAR2(2),
+              vc_control_sql        VARCHAR2(4000),
+              vc_groups_debar       VARCHAR2(4000) default '' ''
+            )
+    ';
+  EXECUTE IMMEDIATE 'alter table RISKSET add primary key (I_RISK_ID)';
+  
+
+END;

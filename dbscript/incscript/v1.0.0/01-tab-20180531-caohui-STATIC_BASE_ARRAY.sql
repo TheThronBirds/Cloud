@@ -1,0 +1,31 @@
+﻿DECLARE
+I_EXISTS   NUMBER;
+BEGIN
+  SELECT COUNT(1) INTO I_EXISTS  FROM USER_TYPES A WHERE A.type_name = 'STATIC_BASE_ARRAY';
+  IF I_EXISTS > 0 THEN
+     EXECUTE  IMMEDIATE 'DROP TYPE STATIC_BASE_ARRAY' ;
+  END IF;
+  
+   EXECUTE  IMMEDIATE '
+       CREATE OR REPLACE TYPE RISKRESULT_STATIC_BASE_OBJ AS OBJECT(
+        VC_RESULT_ID             NVARCHAR2(30),
+        I_RIKS_ID                NUMBER ,
+        VC_RISK_DESCRIPTION       NVARCHAR2(300) ,
+        I_SPRING_DATE             NUMBER ,
+        I_SPRING_TIME             NUMBER ,
+        C_DECLARE_TYPE            NVARCHAR2(50) ,
+        VC_INDEX_UNIT             NVARCHAR2(50) ,
+        I_COMPARE_BS              NVARCHAR2(50) ,
+        I_FUND                   NUMBER,
+        VC_STOCK_CODE             NVARCHAR2(20),
+        OFFENDTYPE                 NVARCHAR2(2000),
+        ENVALUE                   NVARCHAR2(20),
+        ENRESULTVALUE             NVARCHAR2(20),
+        VC_FZ_VALUE               NVARCHAR2(100),
+        VC_FM_VALUE                NVARCHAR2(100),
+        VC_SERIAL_NUMBER           NVARCHAR2(50)
+        ) ';
+    
+     EXECUTE  IMMEDIATE ' CREATE OR REPLACE TYPE  STATIC_BASE_ARRAY AS TABLE OF RISKRESULT_STATIC_BASE_OBJ';
+  
+END;

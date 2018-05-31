@@ -1,0 +1,75 @@
+DECLARE
+I_EXISTS NUMBER;
+BEGIN
+  SELECT COUNT(1) INTO I_EXISTS FROM USER_TABLES A WHERE A.TABLE_NAME = 'FUNDINFOS';
+  
+  IF I_EXISTS > 0 THEN
+    
+    EXECUTE IMMEDIATE 'DROP TABLE FUNDINFOS';
+  
+  END IF;
+  
+   EXECUTE IMMEDIATE 
+          'create table FUNDINFOS
+          (
+            i_fund                        NUMBER(22) default 0 not null,
+            vc_ext_code                   VARCHAR2(20) default '' '' not null,
+            vc_fund_name                  VARCHAR2(50) default '' '' not null,
+            vc_fund_short                 VARCHAR2(50) default '' '' not null,
+            vc_assetcode                  VARCHAR2(20) default '' '' not null,
+            vc_assetcury                  VARCHAR2(20) default '' '' not null,
+            i_inceptiondate               NUMBER(8) default 0 not null,
+            i_storageinitdate             NUMBER(8) default 0 not null,
+            i_inceptionasset              NUMBER(18,4) default 0.00 not null,
+            vc_assetsource                VARCHAR2(20) default '' '' not null,
+            c_status                      VARCHAR2(1) default ''0'' not null,
+            vc_summary                    VARCHAR2(500) default '' '' not null,
+            i_checkstate                  INTEGER default 1 not null,
+            vc_creator                    VARCHAR2(20) default '' '' not null,
+            i_createtime                  NUMBER(8) default 0 not null,
+            vc_checkuser                  VARCHAR2(20) default '' '' not null,
+            i_checktime                   NUMBER(8) default 0 not null,
+            vc_baseratesrccode            VARCHAR2(20) default '' '' not null,
+            vc_baseratecode               VARCHAR2(20) default '' '' not null,
+            vc_assetratesrccode           VARCHAR2(20) default '' '' not null,
+            vc_assetratecode              VARCHAR2(20) default '' '' not null,
+            i_liquidate_ndays             NUMBER(8) default 0 not null,
+            i_createdate                  NUMBER(8) default 0 not null,
+            i_checkdate                   NUMBER(8) default 0 not null,
+            vc_basecury                   VARCHAR2(20) not null,
+            vc_consignor                  VARCHAR2(20) default '' '' not null,
+            en_fund_share                 NUMBER(19,6) default 0 not null,
+            vc_fund_type                  VARCHAR2(5) default '' '' not null,
+            i_begin_date                  NUMBER(22) default 0 not null,
+            i_end_date                    NUMBER(22) default 0 not null,
+            vc_subconsignor               VARCHAR2(20) default '' '' not null,
+            vc_account_type               VARCHAR2(20) default '' '' not null,
+            vc_fundaccount_type           VARCHAR2(1) default ''0'' not null,
+            vc_extattr                    VARCHAR2(200) default ''0'' not null,
+            vc_acc_name                   VARCHAR2(100) default '' '' not null,
+            i_id                          NUMBER(22) default 0,
+            vc_branch_no                  VARCHAR2(20) default '' '' not null,
+            vc_investflowtype             NUMBER(8) default -1 not null,
+            i_autotrade                   INTEGER default 0,
+            i_interfaceflag               INTEGER default 0 not null,
+            l_local_custodian             VARCHAR2(20) default '' '',
+            i_construct_period_start_date NUMBER(8) default 0 not null,
+            i_construct_period_end_date   NUMBER(8) default 0 not null,
+            i_closed_period_start_date    NUMBER(8) default 0 not null,
+            i_closed_period_end_date      NUMBER(8) default 0 not null,
+            c_value_class                 CHAR(1),
+            c_out_bond_type               CHAR(1),
+            c_exchange_net_type           CHAR(1),
+            c_long_stop_type              CHAR(1),
+            c_bond_stop_type              CHAR(1),
+            c_exchange_abs_type           CHAR(1),
+            c_bank_abs_type               CHAR(1),
+            c_bond_risk_value             CHAR(1),
+            c_bond_risk_cost              CHAR(1),
+            i_import_time                 NUMBER default 0 not null,
+            i_static_number               NUMBER default 0 not null
+          )';
+  
+  EXECUTE IMMEDIATE 
+        ' alter table FUNDINFOS add constraint PK_FUNDINFOS primary key (I_FUND) ';
+END;
