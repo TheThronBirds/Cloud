@@ -12,6 +12,29 @@
  ********************************************************/
 package com.yhfin.risk.cloud.analy.calculate.service.local.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson.JSON;
 import com.yhfin.risk.cloud.analy.calculate.service.feign.ISendMessageService;
 import com.yhfin.risk.cloud.analy.calculate.service.local.IOverallManagerService;
@@ -24,22 +47,13 @@ import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO
 import com.yhfin.risk.core.common.pojos.dtos.result.ResultHandleResultDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
+import com.yhfin.risk.core.common.pojos.dtos.synchronizate.SynchronizateTableDataStatusDTO;
 import com.yhfin.risk.core.common.utils.StringUtil;
 import com.yhfin.risk.core.result.hander.IHanderResultService;
 import com.yhfin.risk.core.synchronizate.entry.IEntrySynchronizateService;
 import com.yhfin.risk.core.synchronizate.memory.IMemorySynchronizateService;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 计算分析服务统一管理类服务
@@ -54,7 +68,8 @@ import java.util.stream.Collectors;
 public class OverallManagerServiceImpl implements IOverallManagerService {
 
     private String currentSerialNumber;
-
+    @Value("${yhfin.common.isSaveHisResult}")
+    private boolean isSaveHisResult;
     @Autowired
     private IMemorySynchronizateService memorySynchronizateService;
 
@@ -258,10 +273,10 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                 if (tableNames != null && !tableNames.isEmpty()) {
                     if (message.getDropTable()) {
                         memorySynchronizateService
-                                .synchronizateTableDatas(tableNames.toArray(new String[tableNames.size()]));
+                        .synchronizateDropTables(tableNames.toArray(new String[tableNames.size()]));
                     }
                     memorySynchronizateService
-                            .synchronizateDropTables(tableNames.toArray(new String[tableNames.size()]));
+                    .synchronizateTableDatas(tableNames.toArray(new String[tableNames.size()]));
                 }
             }
 
@@ -512,14 +527,18 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
             this.currentSerialNumber = serialNumber;
             entryStaticAnalyManageService.getfundAnalyResults().clear();
             handerResultService.initConnection();
-            handerResultService.deleteInvalidDatas(serialNumber);
+            if(!isSaveHisResult) {
+            	handerResultService.deleteInvalidDatas(serialNumber);
+            }
         } else {
             if (!StringUtils.equals(this.currentSerialNumber, serialNumber)) {
                 if (Integer.valueOf(this.currentSerialNumber).compareTo(Integer.valueOf(serialNumber)) < 0) {
                     this.currentSerialNumber = serialNumber;
                     entryStaticAnalyManageService.getfundAnalyResults().clear();
                     handerResultService.initConnection();
-                    handerResultService.deleteInvalidDatas(serialNumber);
+                    if(!isSaveHisResult) {
+                    	handerResultService.deleteInvalidDatas(serialNumber);
+                    }
                 }
             }
         }
@@ -538,4 +557,18 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
     public String getCurrentSerialNumber() {
         return currentSerialNumber;
     }
+
+    /**
+     * 获取当前同步状态
+     *
+     * @param viewNames 内存视图名称
+     * @Title synchronizateAllDropTables
+     * @Description: 获取当前同步状态
+     * @author: benguolong
+     * @Date: 2018/8/29/14:22
+     */
+	@Override
+	public SynchronizateTableDataStatusDTO getSynchronizateTableDataStatusDTO() {
+		return memorySynchronizateService.getSynchronizateTableDataStatusDTO();
+	}
 }

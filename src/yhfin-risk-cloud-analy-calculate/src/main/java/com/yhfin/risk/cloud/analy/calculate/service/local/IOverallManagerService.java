@@ -15,6 +15,7 @@ package com.yhfin.risk.cloud.analy.calculate.service.local;
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticSingleFundCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
+import com.yhfin.risk.core.common.pojos.dtos.synchronizate.SynchronizateTableDataStatusDTO;
 
 /**
  * 计算分析服务统一管理类服务
@@ -65,4 +66,15 @@ public interface IOverallManagerService {
      * @Date: 2018年5月22日/上午10:18:40
      */
     String getCurrentSerialNumber();
+    
+    /**
+     * 获取当前同步状态
+     *
+     * @param viewNames 内存视图名称
+     * @Title synchronizateAllDropTables
+     * @Description: 获取当前同步状态
+     * @author: benguolong
+     * @Date: 2018/8/29/14:22
+     */
+    SynchronizateTableDataStatusDTO getSynchronizateTableDataStatusDTO();
 }

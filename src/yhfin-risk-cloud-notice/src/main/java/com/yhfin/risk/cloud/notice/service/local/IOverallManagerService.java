@@ -12,9 +12,12 @@
  ********************************************************/
 package com.yhfin.risk.cloud.notice.service.local;
 
+import java.util.List;
+
 import com.yhfin.risk.core.common.pojos.dtos.notice.StaticCalculateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.EntryMessageSynchronizateDTO;
 import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
+import com.yhfin.risk.core.common.pojos.dtos.synchronizate.SynchronizateTableDataStatusDTO;
 
 /**
  *   把通知中心接收 的消息放入队列中，按照顺序一个一个进行处理；通过轮询方式发送同步内存 同步条目消息
@@ -54,7 +57,15 @@ public interface IOverallManagerService {
 	 */
 	void handerStaticCalculateRequest(StaticCalculateDTO staticCalculate);
 	
-	
-	
+	/**
+	 * 接收内存同步状态查询消息
+	 *
+	 * @Title handerMemorySynchronizateStatusMessage
+	 * @Description: 接收内存同步状态查询消息
+	 * @author: benguolong
+	 * @Date: 2018年8月29日/下午18:30:01
+	 */
+	List<Object> handerMemorySynchronizateStatusMessage();
+
 	
 }

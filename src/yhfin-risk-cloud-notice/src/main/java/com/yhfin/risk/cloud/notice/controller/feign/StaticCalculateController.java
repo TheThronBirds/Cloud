@@ -124,8 +124,9 @@ public class StaticCalculateController {
 			return ServerResponse.createBySuccess(staticAllFundCalculateResult.getRequestId(),
 					staticAllFundCalculateResult.getSerialNumber(), staticAllFundCalculateResult);
 		}
-		return ServerResponse.createByError("", "", Const.ExceptionErrorCode.NOTICE_ERROR_CODE, "没有计算信息");
+		return ServerResponse.createByError("", "", Const.ResponseCode.NOT_CALCULATE_CODE, "没有计算信息");
 	}
+	
 
 	/**
 	 *
@@ -150,9 +151,8 @@ public class StaticCalculateController {
 					}).collect(Collectors.toList());
 			return ServerResponse.createBySuccess(staticAllFundCalculateResult.getRequestId(),
 					staticAllFundCalculateResult.getSerialNumber(), collect);
-
 		}
-		return ServerResponse.createByError("", "", Const.ExceptionErrorCode.NOTICE_ERROR_CODE, "没有计算信息");
+		return ServerResponse.createByError("", "", Const.ResponseCode.NOT_CALCULATE_CODE, "没有计算信息");
 	}
 
 }

@@ -14,14 +14,18 @@ package com.yhfin.risk.cloud.notice.service.local.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -43,9 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 把通知中心接收 的消息放入队列中，按照顺序一个一个进行处理；通过轮询方式发送同步内存 同步条目消息
  * 包名称：com.yhfin.risk.cloud.notice.service.local.impl
- * 类名称：OverallManagerServiceImpl
- * 类描述：通过轮询方式发送同步内存 同步条目消息
- * 创建人：@author caohui
+ * 类名称：OverallManagerServiceImpl 类描述：通过轮询方式发送同步内存 同步条目消息 创建人：@author caohui
  * 创建时间：2018/5/13/12:20
  */
 @Slf4j
@@ -61,9 +63,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	private ExecutorService handerMassegePool = new ThreadPoolExecutor(1, 1,
-			1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000),
-			(runnable) -> {
+	private ExecutorService handerMassegePool = new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MICROSECONDS,
+			new LinkedBlockingQueue<Runnable>(20000), (runnable) -> {
 				return new Thread(runnable, "取出静态基金分析计算、同步条目、同步内存信息线程池单线程");
 			});
 
@@ -99,9 +100,9 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 							realHanderStaticCalculateRequest((StaticCalculateDTO) message);
 						}
 					}
-				}catch (InterruptedException e){
-					if(log.isErrorEnabled()){
-						log.error("取出静态基金分析计算、同步条目、同步内存信息失败",e);
+				} catch (InterruptedException e) {
+					if (log.isErrorEnabled()) {
+						log.error("取出静态基金分析计算、同步条目、同步内存信息失败", e);
 					}
 				}
 			}
@@ -137,7 +138,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 			if (log.isInfoEnabled()) {
 				log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理同步条目消息");
 			}
-			if(!calculateManageService.getCalculateProcess()){
+			if (!calculateManageService.getCalculateProcess()) {
 				if (message.getBuildSql() != null && message.getBuildSql()) {
 					if (message.getSynchronizateAll() != null && message.getSynchronizateAll()) {
 						buildSqlService.entryBuildSqlAll();
@@ -159,7 +160,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 											+ ",开始轮询发送同步条目消息,发送地址:{}",
 									"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate");
 						}
-						restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate",
+						restTemplate.postForObject(
+								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/entrySynchronizate",
 								message, ServerResponse.class);
 					}
 				}
@@ -190,7 +192,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 				log.info(StringUtil.commonLogStart(message.getSerialNumber(), message.getRequestId()) + ",开始处理同步内存消息");
 			}
 
-			if(!calculateManageService.getCalculateProcess()){
+			if (!calculateManageService.getCalculateProcess()) {
 				List<ServiceInstance> analyInstances = client.getInstances("RISK-ANALY-CALCULATE");
 				if (analyInstances == null) {
 					analyInstances = new ArrayList<>(10);
@@ -205,12 +207,12 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 											+ ",开始轮询发送同步内存消息,发送地址:{}",
 									"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate");
 						}
-						restTemplate.postForObject("http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate",
+						restTemplate.postForObject(
+								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizate",
 								message, ServerResponse.class);
 					}
 				}
 			}
-
 
 		} catch (Exception e) {
 			if (log.isErrorEnabled()) {
@@ -219,6 +221,57 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 			}
 		}
 
+	}
+
+	/**
+	 * 
+	 * 真正处理同步内存同步消息 通过轮询方式发送给同步内存消息
+	 *
+	 *
+	 * @Title realHanderMemorySynchronizateMessage
+	 * @Description: 真正处理同步内存同步消息 通过轮询方式发送给同步内存消息
+	 * @author: caohui
+	 * @Date: 2018年5月21日/上午11:16:52
+	 */
+	@Override
+	public List<Object> handerMemorySynchronizateStatusMessage() {
+		List<Object> synchronizateTableDataStatusDTOs = null;
+		try {
+			if (log.isInfoEnabled()) {
+				log.info("开始处理内存同步状态查询消息");
+			}
+
+			if (!calculateManageService.getCalculateProcess()) {
+				List<ServiceInstance> analyInstances = client.getInstances("RISK-ANALY-CALCULATE");
+				if (analyInstances == null) {
+					analyInstances = new ArrayList<>(10);
+				}
+				if (analyInstances != null && !analyInstances.isEmpty()) {
+					synchronizateTableDataStatusDTOs = new ArrayList<>();
+					for (ServiceInstance instance : analyInstances) {
+						String host = instance.getHost();
+						int port = instance.getPort();
+						if (log.isInfoEnabled()) {
+							log.info("开始轮询发送内存同步状态查询消息,发送地址:{}", "http://" + host + ":" + port
+									+ "/yhfin/cloud/analyCalculate/memorySynchronizateStatus");
+						}
+						ServerResponse serviceResponse = restTemplate.postForObject(
+								"http://" + host + ":" + port + "/yhfin/cloud/analyCalculate/memorySynchronizateStatus",
+								"", ServerResponse.class);
+						synchronizateTableDataStatusDTOs.add(serviceResponse.getData());
+//						log.info("host{}", instance.getHost());
+//						log.info("serviceId{}", instance.getServiceId());
+//						log.info("uri{}", instance.getUri());
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			if (log.isErrorEnabled()) {
+				log.error("内存同步状态查询失败", e);
+			}
+		}
+		return synchronizateTableDataStatusDTOs;
 	}
 
 	@Override

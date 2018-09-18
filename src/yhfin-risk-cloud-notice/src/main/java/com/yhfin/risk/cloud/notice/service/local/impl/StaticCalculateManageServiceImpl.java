@@ -216,7 +216,6 @@ public class StaticCalculateManageServiceImpl implements IStaticCalculateManageS
                                 JSON.toJSONString(calculate));
                     }
                     List<String> riskIds = calculate.getRiskIds();
-
                     List<StaticSingleFundCalculateDTO> calculateSingles = calculate.getFundIds().stream()
                             .map((item) -> {
                                 StaticSingleFundCalculateDTO calculateSingle = new StaticSingleFundCalculateDTO();

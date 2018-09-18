@@ -12,19 +12,21 @@
  ********************************************************/
 package com.yhfin.risk.cloud.analy.calculate.controller.feign;
 
-import com.alibaba.fastjson.JSON;
-import com.yhfin.risk.cloud.analy.calculate.service.local.IOverallManagerService;
-import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
-import com.yhfin.risk.core.common.reponse.ServerResponse;
-import com.yhfin.risk.core.common.utils.StringUtil;
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.concurrent.CompletableFuture;
+import com.alibaba.fastjson.JSON;
+import com.yhfin.risk.cloud.analy.calculate.service.local.IOverallManagerService;
+import com.yhfin.risk.core.common.pojos.dtos.synchronizate.MemoryMessageSynchronizateDTO;
+import com.yhfin.risk.core.common.reponse.ServerResponse;
+import com.yhfin.risk.core.common.utils.StringUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 内存同步请求
@@ -60,5 +62,22 @@ public class MemorySynchronizateController {
             overallManagerService.handerMemoryMessageSynchronizate(memoryMessage);
         });
         return ServerResponse.createBySuccess(memoryMessage.getRequestId(), memoryMessage.getSerialNumber());
+    }
+    
+    /**
+     * 内存同步状态查询消息
+     * @Title entrySynchronizate
+     * @Description: 条目同步消息
+     * @param  memoryMessage 内存同步消息
+     * @return
+     * @author: benguolong 
+     * @Date:  2018/5/26/15:19
+     */
+    @RequestMapping(value = "/memorySynchronizateStatus", method = RequestMethod.POST, produces = "application/json")
+    public ServerResponse memorySynchronizateStatus() {
+        if (log.isInfoEnabled()) {
+            log.info("接收到内存同步状态查询消息");
+        }
+        return ServerResponse.createBySuccess("", "",overallManagerService.getSynchronizateTableDataStatusDTO());
     }
 }
