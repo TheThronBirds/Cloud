@@ -121,7 +121,6 @@ public class SendMessageController {
 	/**
 	 * 发送内存同步状态查询消息
 	 *
-	 * @param message
 	 *            消息体
 	 * @return 接口返回信息
 	 * @Title memoryMessageSynchronizateStatus

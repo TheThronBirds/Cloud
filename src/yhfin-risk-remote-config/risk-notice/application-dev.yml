@@ -1,0 +1,96 @@
+yhfin:
+  common:
+    config: risk,swagger
+  data: 
+    #内存数据库配置
+    memory:
+      #内存数据源路径配置
+      jdbcUrl: jdbc:h2:mem:memorydb
+      #内存数据源web登录用户名
+      username: sa
+      #内存数据源web登录用户名对应的密码
+      password: 
+      #内存数据库驱动类型
+      driverClassName: org.h2.Driver
+      maxPoolSize: 200
+      minIdle: 100
+    #风控数据库配置
+    risk:
+      #风控数据库连接配置url
+      jdbcUrl: jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = 10.71.21.151)(PORT = 1521))(CONNECT_DATA =(SERVER = DEDICATED)(SERVICE_NAME = jytest) ))
+      #风控数据库登录用户名
+      username: riskdev
+      #风控数据库登录密码
+      password: riskdev_2018
+      #风控数据源驱动类型
+      driverClassName: oracle.jdbc.OracleDriver
+      maxPoolSize: 20
+      minIdle: 10
+
+
+risk-analy-calculate:
+  ribbon:
+    #请求连接时间
+    ConnectTimeout: 250
+    #请求处理的超时时间
+    ReadTimeout: 2000
+    #多所有操作请求都进行重试
+    OkToRetryOnAllOperations: true
+    #切换实例重试次数
+    MaxAutoRetriesNextServer: 2
+    #对当前实例的重试次数
+    MaxAutoRetries: 1
+risk-bus:
+  ribbon:
+    #请求连接时间
+    ConnectTimeout: 250
+    #请求处理的超时时间
+    ReadTimeout: 2000
+    #多所有操作请求都进行重试
+    OkToRetryOnAllOperations: true
+    #切换实例重试次数
+    MaxAutoRetriesNextServer: 2
+    #对当前实例的重试次数
+    MaxAutoRetries: 1
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            #hystrix默认熔断时间
+            timeoutInMilliseconds: 30000
+
+server:
+  port: 9004
+spring:
+  #消息中间件rabbitmq配置
+  rabbitmq:
+    host: 10.71.22.45
+    prot: 5672
+    username: yhfin
+    password: yhfin
+  cloud:
+    stream:
+      bindings:
+        entry:
+          destination: entry-channel
+          contentType: application/json
+        memory:
+          destination: memory-channel
+          contentType: application/json
+        analy:
+          destination: analy-channel
+          contentType: application/json
+        result:
+          destination: result-channel
+          contentType: application/json
+    loadbalancer:
+      retry:
+        #重试机制开启
+        enabled: true
+
+feign:
+  hystrix:
+    enabled: true

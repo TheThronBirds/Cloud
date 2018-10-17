@@ -561,7 +561,6 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
     /**
      * 获取当前同步状态
      *
-     * @param viewNames 内存视图名称
      * @Title synchronizateAllDropTables
      * @Description: 获取当前同步状态
      * @author: benguolong

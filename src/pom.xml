@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
 	<!--
+
         <module>yhfin-risk-cloud-register</module>
         <module>yhfin-risk-cloud-config</module>
 		-->

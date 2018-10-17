@@ -68,7 +68,6 @@ public class MemorySynchronizateController {
      * 内存同步状态查询消息
      * @Title entrySynchronizate
      * @Description: 条目同步消息
-     * @param  memoryMessage 内存同步消息
      * @return
      * @author: benguolong 
      * @Date:  2018/5/26/15:19
