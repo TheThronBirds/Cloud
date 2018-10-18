@@ -98,7 +98,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
             });
 
 
-    private ExecutorService analyFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+    private ExecutorService analyFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() + 1,
             1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
@@ -108,7 +108,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         }
     });
 
-    private ExecutorService calculateFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() + 2,
+    private ExecutorService calculateFundExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() * 2 + 2,
             1000L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>(20000), new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
@@ -124,15 +124,6 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
     });
 
     private final Integer STOP_NUMBER = 6;
-    /**
-     * 定时线程是否启动标识
-     */
-    private boolean scheduleStart;
-
-    /**
-     * 定时线程去队列中拿取数据，失败次数
-     */
-    private AtomicInteger invalidTakeNumber = new AtomicInteger();
 
     private ScheduledExecutorService handerInitialResultPoolSchedule = Executors.newSingleThreadScheduledExecutor();
 
@@ -146,6 +137,25 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 
     @PostConstruct
     private void init() {
+        if (log.isInfoEnabled()) {
+            log.info("定时取结果信息线程启动");
+        }
+        handerInitialResultPoolSchedule.scheduleAtFixedRate(
+                () -> {
+                    if (calculateResults.size() > 0) {
+                        try {
+                            List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs = new ArrayList<>(8000);
+                            calculateResults.drainTo(calculateResultDTOs, 4000);
+                            handerCalculateResults(calculateResultDTOs);
+                        } catch (Exception e) {
+                            if (log.isErrorEnabled()) {
+                                log.error("分析结果处理失败", e);
+                            }
+                        }
+                    }
+                }, 100, 5000, TimeUnit.MILLISECONDS
+        );
+
         handerMessagePool.execute(() -> {
             while (true) {
                 try {
@@ -164,6 +174,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                 }
             }
         });
+
         handerInitialResultPool.execute(() -> {
             while (true) {
                 FinalStaticEntryCalculateDTO finalStaticEntryCalculate = entryStaticAnalyService
@@ -173,9 +184,6 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                         FinalStaticEntryCalculateResultDTO finalStaticEntryCalculateResult = calculateService.calculateRequest(finalStaticEntryCalculate);
                         try {
                             calculateResults.put(finalStaticEntryCalculateResult);
-                            if (!scheduleStart) {
-                                scheduledStart();
-                            }
                         } catch (InterruptedException e) {
                             if (log.isErrorEnabled()) {
                                 log.error(StringUtil.commonLogStart(finalStaticEntryCalculateResult.getSerialNumber(), finalStaticEntryCalculateResult.getRequestId())
@@ -191,66 +199,6 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
 
     }
 
-    /**
-     * 启动定时线程从缓存结果表中取数据
-     *
-     * @Title scheduledStart
-     * @Description: 启动定时线程从缓存结果表中取数据
-     * @author: caohui
-     * @Date: 2018/5/26/14:32
-     */
-    private synchronized void scheduledStart() {
-        if (!scheduleStart) {
-            handerInitialResultPoolSchedule.scheduleAtFixedRate(
-                    () -> {
-                        if (calculateResults.size() > 0) {
-                            invalidTakeNumber.set(0);
-                            CompletableFuture.runAsync(() -> {
-                                List<FinalStaticEntryCalculateResultDTO> calculateResultDTOs = new ArrayList<>(8000);
-                                calculateResults.drainTo(calculateResultDTOs, 4000);
-                                handerCalculateResults(calculateResultDTOs);
-                            });
-                        } else {
-                            invalidTakeNumber.incrementAndGet();
-                            entryStaticAnalyManageService.updateAnalyCalculateStatus();
-                            if (invalidTakeNumber.get() == STOP_NUMBER) {
-                                scheduleShutdown();
-                            }
-                        }
-                    }, 100, 5000, TimeUnit.MILLISECONDS
-            );
-            this.scheduleStart = true;
-        }
-    }
-
-    /**
-     * 关闭定时线程
-     *
-     * @Title scheduleShutdown
-     * @Description: 关闭定时线程
-     * @author: caohui
-     * @Date: 2018/5/26/14:48
-     */
-    private void scheduleShutdown() {
-        try {
-            if (scheduleStart) {
-                this.scheduleStart = false;
-                handerInitialResultPoolSchedule.shutdown();
-                if (log.isInfoEnabled()) {
-                    log.info("长时间没有结果信息,定时取结果线程停止取数据");
-                }
-                if (log.isInfoEnabled()) {
-                    log.info("关闭线程成功");
-                }
-            }
-        } catch (Exception e) {
-            if (log.isInfoEnabled()) {
-                log.info("关闭线程失败", e);
-            }
-        } finally {
-            handerInitialResultPoolSchedule = Executors.newSingleThreadScheduledExecutor();
-        }
-    }
 
     /**
      * 从队列中拿出同步内存消息 开始同步内存
@@ -265,18 +213,25 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
         try {
             if (message.getSynchrozateAll() != null && message.getSynchrozateAll()) {
                 if (message.getDropTable() != null && message.getDropTable()) {
-                    memorySynchronizateService.synchronizateAllTableDatas();
+                    memorySynchronizateService.synchronizateAllDropViews();
+                    memorySynchronizateService.synchronizateAllDropTables();
                 }
+                memorySynchronizateService.synchronizateAllTableDatas();
                 return;
             } else {
+                if (message.getDeleteTableDatas() != null && !message.getDeleteTableDatas().isEmpty()) {
+                    for (Map.Entry<String, List<Object[]>> entry : message.getDeleteTableDatas().entrySet()) {
+                        memorySynchronizateService.synchronizateDropData(entry.getKey(), entry.getValue());
+                    }
+                }
                 List<String> tableNames = message.getTableNames();
                 if (tableNames != null && !tableNames.isEmpty()) {
                     if (message.getDropTable()) {
                         memorySynchronizateService
-                        .synchronizateDropTables(tableNames.toArray(new String[tableNames.size()]));
+                                .synchronizateDropTables(tableNames.toArray(new String[tableNames.size()]));
                     }
                     memorySynchronizateService
-                    .synchronizateTableDatas(tableNames.toArray(new String[tableNames.size()]));
+                            .synchronizateTableDatas(tableNames.toArray(new String[tableNames.size()]));
                 }
             }
 
@@ -527,8 +482,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
             this.currentSerialNumber = serialNumber;
             entryStaticAnalyManageService.getfundAnalyResults().clear();
             handerResultService.initConnection();
-            if(!isSaveHisResult) {
-            	handerResultService.deleteInvalidDatas(serialNumber);
+            if (!isSaveHisResult) {
+                handerResultService.deleteInvalidDatas(serialNumber);
             }
         } else {
             if (!StringUtils.equals(this.currentSerialNumber, serialNumber)) {
@@ -536,8 +491,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                     this.currentSerialNumber = serialNumber;
                     entryStaticAnalyManageService.getfundAnalyResults().clear();
                     handerResultService.initConnection();
-                    if(!isSaveHisResult) {
-                    	handerResultService.deleteInvalidDatas(serialNumber);
+                    if (!isSaveHisResult) {
+                        handerResultService.deleteInvalidDatas(serialNumber);
                     }
                 }
             }
@@ -566,8 +521,8 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
      * @author: benguolong
      * @Date: 2018/8/29/14:22
      */
-	@Override
-	public SynchronizateTableDataStatusDTO getSynchronizateTableDataStatusDTO() {
-		return memorySynchronizateService.getSynchronizateTableDataStatusDTO();
-	}
+    @Override
+    public SynchronizateTableDataStatusDTO getSynchronizateTableDataStatusDTO() {
+        return memorySynchronizateService.getSynchronizateTableDataStatusDTO();
+    }
 }

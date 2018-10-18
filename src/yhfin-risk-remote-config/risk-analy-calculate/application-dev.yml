@@ -13,8 +13,8 @@ yhfin:
       password:
       #内存数据库驱动类型
       driverClassName: org.h2.Driver
-      maxPoolSize: 200
-      minIdle: 100
+      maxPoolSize: 50
+      minIdle: 20
     #风控数据库配置
     risk:
       #风控数据库连接配置url

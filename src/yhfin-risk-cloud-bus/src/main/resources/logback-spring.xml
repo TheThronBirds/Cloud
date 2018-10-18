@@ -67,7 +67,7 @@
 
     <!-- 开发环境 -->
     <springProfile name="dev">
-        <root level="DEBUG">
+        <root level="INFO">
             <appender-ref ref="LOGCONSOLE"/>
             <appender-ref ref="asyncFileAppender"/>
         </root>
