@@ -434,7 +434,7 @@ public class OverallManagerServiceImpl implements IOverallManagerService {
                             singleFundCalculate.getRiskIds()
                                     .toArray(new String[singleFundCalculate.getRiskIds().size()]));
                 }
-            }, analyFundExecutor);
+            }, analyFundExecutor).join();
         }
     }
 
